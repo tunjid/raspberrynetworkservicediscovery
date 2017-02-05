@@ -13,14 +13,12 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
 import io.reactivex.schedulers.Schedulers;
 
 
-public class ClientService extends BaseService implements ObservableOnSubscribe<Integer> {
+public class ClientService extends BaseService {
 
     private static final String TAG = ClientService.class.getSimpleName();
 
@@ -40,11 +38,7 @@ public class ClientService extends BaseService implements ObservableOnSubscribe<
     public IBinder onBind(Intent intent) {
         service = intent.getParcelableExtra(NSD_SERVICE_INFO_KEY);
 
-        Observable.create(this)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this);
-
+        Completable.create(this).subscribeOn(Schedulers.io()).subscribe(this);
         return binder;
     }
 
@@ -80,30 +74,26 @@ public class ClientService extends BaseService implements ObservableOnSubscribe<
     }
 
     @Override
-    public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+    public void subscribe(CompletableEmitter emitter) throws Exception {
+        try {
+            if (currentSocket == null) {
+                currentSocket = new Socket(service.getHost(), service.getPort());
 
-        if (!emitter.isDisposed()) {
+                BufferedReader in = createBufferedReader(currentSocket);
 
-            try {
-                if (currentSocket == null) {
-                    currentSocket = new Socket(service.getHost(), service.getPort());
+                Log.d(TAG, "Client-side socket initialized.");
 
-                    BufferedReader in = createBufferedReader(currentSocket);
+                String fromServer;
 
-                    Log.d(TAG, "Client-side socket initialized.");
+                while ((fromServer = in.readLine()) != null) {
+                    System.out.println("Server: " + fromServer);
 
-                    String fromServer;
-
-                    while ((fromServer = in.readLine()) != null) {
-                        System.out.println("Server: " + fromServer);
-
-                        if (fromServer.equals("Bye.")) break;
-                    }
+                    if (fromServer.equals("Bye.")) break;
                 }
             }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

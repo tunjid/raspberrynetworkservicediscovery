@@ -13,7 +13,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import io.reactivex.Observer;
+import io.reactivex.CompletableObserver;
+import io.reactivex.CompletableOnSubscribe;
 import io.reactivex.disposables.Disposable;
 
 /**
@@ -22,7 +23,10 @@ import io.reactivex.disposables.Disposable;
  * Created by tj.dahunsi on 2/5/17.
  */
 
-public abstract class BaseService extends Service implements Observer<Integer> {
+public abstract class BaseService extends Service
+        implements
+        CompletableObserver,
+        CompletableOnSubscribe {
 
     protected NsdHelper nsdHelper;
     protected Disposable currentSocketDisposable;
@@ -36,11 +40,6 @@ public abstract class BaseService extends Service implements Observer<Integer> {
     @Override
     public void onSubscribe(Disposable disposable) {
         currentSocketDisposable = disposable;
-    }
-
-    @Override
-    public void onNext(Integer integer) {
-
     }
 
     @Override
@@ -71,7 +70,7 @@ public abstract class BaseService extends Service implements Observer<Integer> {
                         new OutputStreamWriter(socket.getOutputStream())), true);
     }
 
-    protected BufferedReader createBufferedReader(Socket socket)  throws IOException {
+    protected BufferedReader createBufferedReader(Socket socket) throws IOException {
         return new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 }

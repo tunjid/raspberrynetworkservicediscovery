@@ -14,13 +14,12 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
 import io.reactivex.schedulers.Schedulers;
 
 
-public class ServerService extends BaseService implements ObservableOnSubscribe<Integer> {
+public class ServerService extends BaseService {
 
     private static final String TAG = ServerService.class.getSimpleName();
 
@@ -44,9 +43,7 @@ public class ServerService extends BaseService implements ObservableOnSubscribe<
             e.printStackTrace();
         }
 
-        Observable.create(this)
-                .subscribeOn(Schedulers.io())
-                .subscribe(this);
+        Completable.create(this).subscribeOn(Schedulers.io()).subscribe(this);
     }
 
     @Override
@@ -66,46 +63,44 @@ public class ServerService extends BaseService implements ObservableOnSubscribe<
     }
 
     @Override
-    public void subscribe(ObservableEmitter<Integer> emitter) throws Exception {
+    public void subscribe(CompletableEmitter emitter) throws Exception {
         try {
+            Log.d(TAG, "ServerSocket Created, awaiting connection.");
 
-            if (!emitter.isDisposed()) {
-                Log.d(TAG, "ServerSocket Created, awaiting connection.");
+            Socket socket = serverSocket.accept();
 
-                Socket socket = serverSocket.accept();
+            Log.d(TAG, "Client socket received.");
 
-                Log.d(TAG, "Client socket received.");
+            if (socket == null) Log.d(TAG, "Called a null currentSocket.");
 
-                if (socket == null) Log.d(TAG, "Called a null currentSocket.");
+            if (socket != null && socket.isConnected()) {
+                try {
 
-                if (socket != null && socket.isConnected()) {
-                    try {
+                    PrintWriter out = createPrintWriter(socket);
+                    BufferedReader in = createBufferedReader(socket);
 
-                        PrintWriter out = createPrintWriter(socket);
-                        BufferedReader in = createBufferedReader(socket);
+                    String inputLine, outputLine;
 
-                        String inputLine, outputLine;
+                    // Initiate conversation with client
+                    KnockKnockProtocol kkp = new KnockKnockProtocol();
+                    outputLine = kkp.processInput(null);
 
-                        // Initiate conversation with client
-                        KnockKnockProtocol kkp = new KnockKnockProtocol();
-                        outputLine = kkp.processInput(null);
+                    out.println(outputLine);
+
+                    while ((inputLine = in.readLine()) != null) {
+                        outputLine = kkp.processInput(inputLine);
                         out.println(outputLine);
 
-                        while ((inputLine = in.readLine()) != null) {
-                            outputLine = kkp.processInput(inputLine);
-                            out.println(outputLine);
+                        Log.d(TAG, "Read from client stream: " + inputLine);
 
-                            Log.d(TAG, "Read from the stream: " + inputLine);
-
-                            if (outputLine.equals("Bye.")) break;
-                        }
-
-
-                        in.close();
+                        if (outputLine.equals("Bye.")) break;
                     }
-                    catch (IOException e) {
-                        e.printStackTrace();
-                    }
+
+
+                    in.close();
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }
