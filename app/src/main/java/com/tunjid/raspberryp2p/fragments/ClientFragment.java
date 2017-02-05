@@ -16,16 +16,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 
-import com.helloworld.utils.baseclasses.BaseFragment;
-import com.helloworld.utils.widget.FloatingActionButton;
-import com.tunjid.raspberryp2p.activities.AutoActivity;
-import com.tunjid.raspberryp2p.services.ClientService;
 import com.tunjid.raspberryp2p.R;
+import com.tunjid.raspberryp2p.abstractclasses.AutoFragment;
+import com.tunjid.raspberryp2p.services.ClientService;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ClientFragment extends BaseFragment
+public class ClientFragment extends AutoFragment
         implements
         ServiceConnection,
         View.OnClickListener {
@@ -36,8 +34,6 @@ public class ClientFragment extends BaseFragment
     private ProgressDialog progressDialog;
 
     private EditText editText;
-    private FloatingActionButton floatingActionButton;
-
 
     public ClientFragment() {
         // Required empty public constructor
@@ -78,9 +74,7 @@ public class ClientFragment extends BaseFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        floatingActionButton = ((AutoActivity) getActivity()).getFloatingActionButton();
-        floatingActionButton.setImageResource(R.drawable.ic_chat_bubble_white_24dp);
-        floatingActionButton.setOnClickListener(this);
+        floatingActionButton.hideTranslate();
 
         Intent clientIntent = new Intent(getActivity(), ClientService.class);
         clientIntent.putExtra(ClientService.NSD_SERVICE_INFO_KEY, service);
@@ -99,14 +93,12 @@ public class ClientFragment extends BaseFragment
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        floatingActionButton.setOnClickListener(null);
     }
 
     @Override
     public void onServiceConnected(ComponentName name, IBinder binder) {
 
         clientService = ((ClientService.NsdClientBinder) binder).getClientService();
-        //floatingActionButton.showTranslate();
 
         if (progressDialog != null) progressDialog.dismiss();
 

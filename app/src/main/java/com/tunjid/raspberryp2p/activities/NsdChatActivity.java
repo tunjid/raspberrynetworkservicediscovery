@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.tunjid.raspberryp2p;
+package com.tunjid.raspberryp2p.activities;
 
 import android.app.Activity;
 import android.net.nsd.NsdServiceInfo;
@@ -25,6 +25,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.tunjid.raspberryp2p.ChatConnection;
+import com.tunjid.raspberryp2p.NsdHelper;
+import com.tunjid.raspberryp2p.R;
 
 
 public class NsdChatActivity extends Activity {

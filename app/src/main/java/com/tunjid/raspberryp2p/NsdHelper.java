@@ -162,6 +162,10 @@ public class NsdHelper {
         mNsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, mDiscoveryListener);
     }
 
+    public String getServiceName() {
+        return mServiceName;
+    }
+
     public NsdManager getmNsdManager() {
         return mNsdManager;
     }

@@ -20,13 +20,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.helloworld.utils.baseclasses.BaseFragment;
-import com.tunjid.raspberryp2p.services.ClientService;
-import com.tunjid.raspberryp2p.adapters.NSDAdapter;
 import com.tunjid.raspberryp2p.NsdHelper;
 import com.tunjid.raspberryp2p.R;
+import com.tunjid.raspberryp2p.abstractclasses.AutoFragment;
 import com.tunjid.raspberryp2p.abstractclasses.DiscoveryListener;
 import com.tunjid.raspberryp2p.abstractclasses.ResolveListener;
+import com.tunjid.raspberryp2p.adapters.NSDAdapter;
+import com.tunjid.raspberryp2p.services.ClientService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ServerListFragment extends BaseFragment
+public class ServerListFragment extends AutoFragment
         implements
         ServiceConnection,
         NSDAdapter.ServiceClickedListener {
@@ -109,6 +109,8 @@ public class ServerListFragment extends BaseFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        floatingActionButton.hideTranslate();
+
         nsdHelper = new NsdHelper(getContext());
 
         nsdHelper.initializeDiscoveryListener(discoveryListener);
@@ -154,6 +156,11 @@ public class ServerListFragment extends BaseFragment
         clientIntent.putExtra(ClientService.NSD_SERVICE_INFO_KEY, serviceInfo);
 
         getActivity().bindService(clientIntent, this, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public boolean isSelf(NsdServiceInfo serviceInfo) {
+        return nsdHelper.getServiceName().equals(serviceInfo.getServiceName());
     }
 
     @Override

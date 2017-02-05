@@ -1,6 +1,7 @@
 package com.tunjid.raspberryp2p.adapters;
 
 import android.net.nsd.NsdServiceInfo;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,8 +44,10 @@ public class NSDAdapter extends BaseRecyclerViewAdapter<NSDAdapter.NSDViewHolder
         return infoList.size();
     }
 
-   public interface ServiceClickedListener extends BaseRecyclerViewAdapter.AdapterListener {
+    public interface ServiceClickedListener extends BaseRecyclerViewAdapter.AdapterListener {
         void onServiceClicked(NsdServiceInfo serviceInfo);
+
+        boolean isSelf(NsdServiceInfo serviceInfo);
     }
 
     static class NSDViewHolder extends BaseViewHolder<NSDAdapter.ServiceClickedListener>
@@ -66,6 +69,15 @@ public class NSDAdapter extends BaseRecyclerViewAdapter<NSDAdapter.NSDViewHolder
             SpanUtils.SpanBuilder spanBuilder = SpanUtils.spanBuilder(itemView.getContext(), info.getServiceName());
             spanBuilder.appendNewLine().appendCharsequence(info.getHost().getHostAddress());
 
+            boolean isSelf = adapterListener.isSelf(info);
+
+            if (isSelf) spanBuilder.appendSpace().appendCharsequence("(SELF)");
+
+            int color = ContextCompat.getColor(itemView.getContext(), isSelf
+                    ? R.color.dark_grey
+                    : R.color.colorPrimary);
+
+            textView.setTextColor(color);
             textView.setText(spanBuilder.build());
         }
 
