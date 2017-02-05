@@ -64,13 +64,13 @@ public abstract class BaseService extends Service
         nsdHelper.tearDown();
     }
 
-    protected PrintWriter createPrintWriter(Socket socket) throws IOException {
+    protected static PrintWriter createPrintWriter(Socket socket) throws IOException {
         return new PrintWriter(
                 new BufferedWriter(
                         new OutputStreamWriter(socket.getOutputStream())), true);
     }
 
-    protected BufferedReader createBufferedReader(Socket socket) throws IOException {
+    protected static BufferedReader createBufferedReader(Socket socket) throws IOException {
         return new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 }

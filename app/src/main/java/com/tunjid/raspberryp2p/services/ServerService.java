@@ -67,11 +67,25 @@ public class ServerService extends BaseService {
         try {
             Log.d(TAG, "ServerSocket Created, awaiting connection.");
 
-            Socket socket = serverSocket.accept();
+            while (true) {
+                // Create new clients for every connection received
+                new Client(serverSocket.accept());
+            }
+        }
+        catch (Exception e) {
+            Log.e(TAG, "Error creating ServerSocket: ", e);
+            e.printStackTrace();
+        }
+    }
 
-            Log.d(TAG, "Client socket received.");
+    public class NsdServerBinder extends Binder {
+        // Binder impl
+    }
 
-            if (socket == null) Log.d(TAG, "Called a null currentSocket.");
+    private static class Client {
+
+        Client(Socket socket) {
+            Log.d(TAG, "Connected to new client");
 
             if (socket != null && socket.isConnected()) {
                 try {
@@ -104,13 +118,6 @@ public class ServerService extends BaseService {
                 }
             }
         }
-        catch (Exception e) {
-            Log.e(TAG, "Error creating ServerSocket: ", e);
-            e.printStackTrace();
-        }
-    }
 
-    public class NsdServerBinder extends Binder {
-        // Binder impl
     }
 }
