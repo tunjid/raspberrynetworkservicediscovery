@@ -72,7 +72,7 @@ public class ServerListFragment extends AutoFragment
         public void onServiceResolved(NsdServiceInfo service) {
             super.onServiceResolved(service);
 
-            services.add(service);
+            if (!services.contains(service)) services.add(service);
 
             if (recyclerView != null) recyclerView.post(new Runnable() {
                 @Override
