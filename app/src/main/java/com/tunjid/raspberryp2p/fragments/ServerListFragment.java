@@ -187,6 +187,7 @@ public class ServerListFragment extends AutoFragment
     @Override
     public void onDestroy() {
         super.onDestroy();
+        nsdHelper.tearDown();
         getActivity().unbindService(this);
     }
 }
