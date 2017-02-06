@@ -8,13 +8,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.helloworld.utils.baseclasses.BaseFragment;
 import com.tunjid.raspberryp2p.R;
+import com.tunjid.raspberryp2p.abstractclasses.AutoFragment;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ServerFragment extends BaseFragment
+public class ServerFragment extends AutoFragment
         implements View.OnClickListener {
 
     public ServerFragment() {
@@ -40,6 +40,12 @@ public class ServerFragment extends BaseFragment
         // Inflate the layout for this fragment
 
         return inflater.inflate(R.layout.fragment_server, container, false);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        floatingActionButton.setOnClickListener(this);
     }
 
     @Override
