@@ -179,7 +179,19 @@ public class NsdHelper {
     }
 
     public void tearDown() {
-        mNsdManager.unregisterService(mRegistrationListener);
-        mNsdManager.stopServiceDiscovery(mDiscoveryListener);
+
+        try {
+            mNsdManager.unregisterService(mRegistrationListener);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+        try {
+            mNsdManager.stopServiceDiscovery(mDiscoveryListener);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 }

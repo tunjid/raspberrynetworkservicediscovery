@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.tunjid.raspberryp2p.CommsProtocol;
 import com.tunjid.raspberryp2p.KnockKnockProtocol;
+import com.tunjid.raspberryp2p.NsdHelper;
 import com.tunjid.raspberryp2p.abstractclasses.BaseService;
 
 import java.io.BufferedReader;
@@ -15,36 +16,20 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import io.reactivex.Completable;
-import io.reactivex.CompletableEmitter;
-import io.reactivex.schedulers.Schedulers;
-
 
 public class ServerService extends BaseService {
 
     private static final String TAG = ServerService.class.getSimpleName();
 
-    private ServerSocket serverSocket;
-
+    private ClientThread clientThread;
     private final IBinder binder = new NsdServerBinder();
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        nsdHelper.initializeRegistrationListener();
-
-        // Since discovery will happen via Nsd, we don't need to care which port is
-        // used, just grab an available one and advertise it via Nsd.
-        try {
-            serverSocket = new ServerSocket(0);
-            nsdHelper.registerService(serverSocket.getLocalPort());
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Completable.create(this).subscribeOn(Schedulers.io()).subscribe(this);
+        clientThread = new ClientThread(nsdHelper);
+        clientThread.start();
     }
 
     @Override
@@ -54,33 +39,62 @@ public class ServerService extends BaseService {
 
     protected void tearDown() {
         super.tearDown();
-
-        try {
-            if (serverSocket != null) serverSocket.close();
-        }
-        catch (IOException ioe) {
-            Log.e(TAG, "Error when closing server currentSocket.");
-        }
-    }
-
-    @Override
-    public void subscribe(CompletableEmitter emitter) throws Exception {
-        try {
-            Log.d(TAG, "ServerSocket Created, awaiting connection.");
-
-            while (true) {
-                // Create new clients for every connection received
-                new Client(serverSocket.accept());
-            }
-        }
-        catch (Exception e) {
-            Log.e(TAG, "Error creating ServerSocket: ", e);
-            e.printStackTrace();
-        }
+        clientThread.tearDown();
     }
 
     public class NsdServerBinder extends Binder {
         // Binder impl
+    }
+
+    static class ClientThread extends Thread {
+
+        volatile boolean isRunning;
+
+        private ServerSocket serverSocket;
+
+        ClientThread(NsdHelper helper) {
+
+            helper.initializeRegistrationListener();
+
+            // Since discovery will happen via Nsd, we don't need to care which port is
+            // used, just grab an available one and advertise it via Nsd.
+            try {
+                serverSocket = new ServerSocket(0);
+                helper.registerService(serverSocket.getLocalPort());
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        @Override
+        public void run() {
+            isRunning = true;
+
+            while (isRunning) {
+                try {
+                    Log.d(TAG, "ServerSocket Created, awaiting connection.");
+                    // Create new clients for every connection received
+                    new Client(serverSocket.accept());
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "Error creating ServerSocket: ", e);
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        void tearDown() {
+            isRunning = false;
+            try {
+                Log.d(TAG, "Attempting to close server socket.");
+                serverSocket.close();
+            }
+            catch (Exception e) {
+                Log.e(TAG, "Error closing ServerSocket: ", e);
+                e.printStackTrace();
+            }
+        }
     }
 
     private static class Client {

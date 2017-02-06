@@ -1,9 +1,11 @@
 package com.tunjid.raspberryp2p.services;
 
+import android.content.Context;
 import android.content.Intent;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Binder;
 import android.os.IBinder;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.tunjid.raspberryp2p.abstractclasses.BaseService;
@@ -13,20 +15,15 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-import io.reactivex.Completable;
-import io.reactivex.CompletableEmitter;
-import io.reactivex.CompletableOnSubscribe;
-import io.reactivex.schedulers.Schedulers;
-
 
 public class ClientService extends BaseService {
 
     private static final String TAG = ClientService.class.getSimpleName();
 
-    public static final String NSD_SERVICE_INFO_KEY = "currentService key";
+    public static final String NSD_SERVICE_INFO_KEY = "current Service key";
+    public static final String ACTION_SOCKET_CONNECTED = "com.tunjid.raspberryp2p.services.ClientService_socket_connected";
 
-    private Socket currentSocket;
-    private NsdServiceInfo currentService;
+    private MessageThread messageThread;
 
     private final IBinder binder = new NsdClientBinder();
 
@@ -37,65 +34,39 @@ public class ClientService extends BaseService {
 
     @Override
     public IBinder onBind(Intent intent) {
-        NsdServiceInfo parceledService = intent.getParcelableExtra(NSD_SERVICE_INFO_KEY);
-
-        // Initialize current servoce if we are starting up the first time
-        if (currentService == null) currentService = parceledService;
-
-            // If we're already connected to this NsdServiceInfo, return
-        else if (parceledService.equals(currentService)) return binder;
-
-            // We're binding to an entirely new service. Tear down the current state
-        else tearDown();
-
-        Completable.create(this).subscribeOn(Schedulers.io()).subscribe(this);
-
         return binder;
     }
 
-    public NsdServiceInfo getCurrentService() {
-        return currentService;
+    public void connect(NsdServiceInfo serviceInfo) {
+
+        // Initialize current service if we are starting up the first time
+        if (messageThread == null) {
+            messageThread = new MessageThread(serviceInfo, this);
+        }
+
+        // We're binding to an entirely new service. Tear down the current state
+        else if (!serviceInfo.equals(messageThread.service)) {
+            tearDown();
+            messageThread = new MessageThread(serviceInfo, this);
+        }
+
+        // If we're already connected to this NsdServiceInfo, return
+        else return;
+
+        messageThread.start();
     }
 
     public void sendMessage(String message) {
-        Completable.create(new MessageSender(message, currentSocket))
-                .subscribeOn(Schedulers.io())
-                .subscribe();
+        new MessageSender(message, messageThread.currentSocket).start();
     }
 
     protected void tearDown() {
         super.tearDown();
 
-        try {
-            currentSocket.close();
-        }
-        catch (IOException ioe) {
-            Log.e(TAG, "Error when closing server currentSocket.");
-        }
-    }
+        Log.e(TAG, "Tearing down ClientServer");
 
-    @Override
-    public void subscribe(CompletableEmitter emitter) throws Exception {
-        try {
-            if (currentSocket == null) {
-                currentSocket = new Socket(currentService.getHost(), currentService.getPort());
+        if (messageThread != null) messageThread.exit();
 
-                BufferedReader in = createBufferedReader(currentSocket);
-
-                Log.d(TAG, "Client-side socket initialized.");
-
-                String fromServer;
-
-                while ((fromServer = in.readLine()) != null) {
-                    System.out.println("Server: " + fromServer);
-
-                    if (fromServer.equals("Bye.")) break;
-                }
-            }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public class NsdClientBinder extends Binder {
@@ -105,7 +76,7 @@ public class ClientService extends BaseService {
         }
     }
 
-    static class MessageSender implements CompletableOnSubscribe {
+    static class MessageSender extends Thread {
 
         String message;
         Socket socket;
@@ -116,7 +87,7 @@ public class ClientService extends BaseService {
         }
 
         @Override
-        public void subscribe(CompletableEmitter emitter) throws Exception {
+        public void run() {
             try {
                 createPrintWriter(socket).println(message);
             }
@@ -130,6 +101,58 @@ public class ClientService extends BaseService {
                 Log.d(TAG, "Error3", e);
             }
             Log.d(TAG, "Client sent message: " + message);
+        }
+    }
+
+    static class MessageThread extends Thread {
+
+        NsdServiceInfo service;
+        Socket currentSocket;
+
+        Context context;
+
+        MessageThread(NsdServiceInfo serviceInfo, Context context) {
+            this.service = serviceInfo;
+            this.context = context;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Log.d(TAG, "Initializing client-side socket. Host: " + service.getHost() + ", Port: " + service.getPort());
+
+                currentSocket = new Socket(service.getHost(), service.getPort());
+
+                BufferedReader in = createBufferedReader(currentSocket);
+
+                Log.d(TAG, "Client-side socket initialized.");
+
+                Intent intent = new Intent();
+                intent.setAction(ACTION_SOCKET_CONNECTED);
+
+                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+
+                String fromServer;
+
+                while ((fromServer = in.readLine()) != null) {
+                    System.out.println("Server: " + fromServer);
+
+                    if (fromServer.equals("Bye.")) break;
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        synchronized void exit() {
+            try {
+                Log.d(TAG, "Exiting message thread.");
+                currentSocket.close();
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

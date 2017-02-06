@@ -20,12 +20,12 @@ public abstract class DiscoveryListener implements NsdManager.DiscoveryListener 
 
     @Override
     public void onServiceFound(NsdServiceInfo service) {
-        Log.d(TAG, "Service discovery success" + service);
+        Log.d(TAG, "Service discovery success " + service);
     }
 
     @Override
     public void onServiceLost(NsdServiceInfo service) {
-        Log.e(TAG, "service lost" + service);
+        Log.e(TAG, "service lost " + service);
     }
 
     @Override
@@ -35,11 +35,11 @@ public abstract class DiscoveryListener implements NsdManager.DiscoveryListener 
 
     @Override
     public void onStartDiscoveryFailed(String serviceType, int errorCode) {
-        Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+        Log.e(TAG, "Discovery failed: Error code: " + errorCode);
     }
 
     @Override
     public void onStopDiscoveryFailed(String serviceType, int errorCode) {
-        Log.e(TAG, "Discovery failed: Error code:" + errorCode);
+        Log.e(TAG, "Discovery failed: Error code: " + errorCode);
     }
 }

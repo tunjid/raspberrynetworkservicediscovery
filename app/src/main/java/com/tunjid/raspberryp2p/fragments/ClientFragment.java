@@ -2,15 +2,18 @@ package com.tunjid.raspberryp2p.fragments;
 
 
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,12 +31,27 @@ public class ClientFragment extends AutoFragment
         ServiceConnection,
         View.OnClickListener {
 
+    private boolean isReceiverRegistered;
+
     private NsdServiceInfo service;
     private ClientService clientService;
 
     private ProgressDialog progressDialog;
 
     private EditText editText;
+
+    private final IntentFilter clientServiceFilter = new IntentFilter();
+
+    private final BroadcastReceiver clientServiceReceiever = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            switch (intent.getAction()) {
+                case ClientService.ACTION_SOCKET_CONNECTED:
+                    if (progressDialog != null) progressDialog.dismiss();
+                    break;
+            }
+        }
+    };
 
     public ClientFragment() {
         // Required empty public constructor
@@ -52,6 +70,8 @@ public class ClientFragment extends AutoFragment
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+
+        clientServiceFilter.addAction(ClientService.ACTION_SOCKET_CONNECTED);
 
         service = getArguments().getParcelable(ClientService.NSD_SERVICE_INFO_KEY);
     }
@@ -77,8 +97,6 @@ public class ClientFragment extends AutoFragment
         floatingActionButton.setVisibility(View.GONE);
 
         Intent clientIntent = new Intent(getActivity(), ClientService.class);
-        clientIntent.putExtra(ClientService.NSD_SERVICE_INFO_KEY, service);
-
         getActivity().bindService(clientIntent, this, Context.BIND_AUTO_CREATE);
     }
 
@@ -88,12 +106,15 @@ public class ClientFragment extends AutoFragment
 
         progressDialog = ProgressDialog.show(getActivity(),
                 getString(R.string.connection_title),
-                getString(R.string.connection_text), true);
+                getString(R.string.connection_text), true, true);
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        editText = null;
+        progressDialog = null;
     }
 
     @Override
@@ -101,10 +122,12 @@ public class ClientFragment extends AutoFragment
 
         clientService = ((ClientService.NsdClientBinder) binder).getClientService();
 
-        if (progressDialog != null) progressDialog.dismiss();
+        if (!isReceiverRegistered) {
+            LocalBroadcastManager.getInstance(getContext()).registerReceiver(clientServiceReceiever, clientServiceFilter);
+            isReceiverRegistered = true;
+        }
 
-        // We aren't bound to the same NSD service
-        if (!service.equals(clientService.getCurrentService())) getActivity().onBackPressed();
+        clientService.connect(service);
     }
 
     @Override
@@ -129,5 +152,6 @@ public class ClientFragment extends AutoFragment
     public void onDestroy() {
         super.onDestroy();
         getActivity().unbindService(this);
+        LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(clientServiceReceiever);
     }
 }

@@ -1,14 +1,8 @@
 package com.tunjid.raspberryp2p.fragments;
 
 
-import android.app.ProgressDialog;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.content.ServiceConnection;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -26,7 +20,6 @@ import com.tunjid.raspberryp2p.abstractclasses.AutoFragment;
 import com.tunjid.raspberryp2p.abstractclasses.DiscoveryListener;
 import com.tunjid.raspberryp2p.abstractclasses.ResolveListener;
 import com.tunjid.raspberryp2p.adapters.NSDAdapter;
-import com.tunjid.raspberryp2p.services.ClientService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,14 +29,11 @@ import java.util.List;
  */
 public class ServerListFragment extends AutoFragment
         implements
-        ServiceConnection,
         NSDAdapter.ServiceClickedListener {
 
-    private ProgressDialog progressDialog;
     private RecyclerView recyclerView;
 
     private NsdHelper nsdHelper;
-    private ClientService clientService;
 
     private List<NsdServiceInfo> services = new ArrayList<>();
 
@@ -63,25 +53,28 @@ public class ServerListFragment extends AutoFragment
         @Override
         public void onServiceFound(NsdServiceInfo service) {
             super.onServiceFound(service);
-            nsdHelper.getmNsdManager().resolveService(service, resolveListener);
+            nsdHelper.getmNsdManager().resolveService(service, getResolveListener());
         }
     };
 
-    private ResolveListener resolveListener = new ResolveListener() {
-        @Override
-        public void onServiceResolved(NsdServiceInfo service) {
-            super.onServiceResolved(service);
 
-            if (!services.contains(service)) services.add(service);
+    private ResolveListener getResolveListener() {
+        return new ResolveListener() {
+            @Override
+            public void onServiceResolved(NsdServiceInfo service) {
+                super.onServiceResolved(service);
 
-            if (recyclerView != null) recyclerView.post(new Runnable() {
-                @Override
-                public void run() {
-                    recyclerView.getAdapter().notifyDataSetChanged();
-                }
-            });
-        }
-    };
+                if (!services.contains(service)) services.add(service);
+
+                if (recyclerView != null) recyclerView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        recyclerView.getAdapter().notifyDataSetChanged();
+                    }
+                });
+            }
+        };
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -90,7 +83,7 @@ public class ServerListFragment extends AutoFragment
 
         nsdHelper = new NsdHelper(getContext());
         nsdHelper.initializeDiscoveryListener(discoveryListener);
-        nsdHelper.initializeResolveListener(resolveListener);
+        //nsdHelper.initializeResolveListener(resolveListener);
 
         nsdHelper.discoverServices();
     }
@@ -147,36 +140,10 @@ public class ServerListFragment extends AutoFragment
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onServiceConnected(ComponentName name, IBinder binder) {
-        if (progressDialog != null) progressDialog.dismiss();
-
-        clientService = ((ClientService.NsdClientBinder) binder).getClientService();
-        showFragment(ClientFragment.newInstance(clientService.getCurrentService()));
-    }
-
-    @Override
-    public void onServiceDisconnected(ComponentName name) {
-        clientService = null;
-    }
 
     @Override
     public void onServiceClicked(NsdServiceInfo serviceInfo) {
-
-        // Already bound
-        if (clientService != null) {
-            showFragment(ClientFragment.newInstance(clientService.getCurrentService()));
-            return;
-        }
-
-        progressDialog = ProgressDialog.show(getActivity(),
-                getString(R.string.connection_title),
-                getString(R.string.connection_text), true);
-
-        Intent clientIntent = new Intent(getActivity(), ClientService.class);
-        clientIntent.putExtra(ClientService.NSD_SERVICE_INFO_KEY, serviceInfo);
-
-        getActivity().bindService(clientIntent, this, Context.BIND_AUTO_CREATE);
+        showFragment(ClientFragment.newInstance(serviceInfo));
     }
 
     @Override
@@ -188,6 +155,5 @@ public class ServerListFragment extends AutoFragment
     public void onDestroy() {
         super.onDestroy();
         nsdHelper.tearDown();
-        getActivity().unbindService(this);
     }
 }

@@ -13,23 +13,15 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-import io.reactivex.CompletableObserver;
-import io.reactivex.CompletableOnSubscribe;
-import io.reactivex.disposables.Disposable;
-
 /**
  * Base service with rx operators
  * <p>
  * Created by tj.dahunsi on 2/5/17.
  */
 
-public abstract class BaseService extends Service
-        implements
-        CompletableObserver,
-        CompletableOnSubscribe {
+public abstract class BaseService extends Service {
 
     protected NsdHelper nsdHelper;
-    protected Disposable currentSocketDisposable;
 
     @Override
     public void onCreate() {
@@ -37,20 +29,6 @@ public abstract class BaseService extends Service
         nsdHelper = new NsdHelper(this);
     }
 
-    @Override
-    public void onSubscribe(Disposable disposable) {
-        currentSocketDisposable = disposable;
-    }
-
-    @Override
-    public void onError(Throwable e) {
-
-    }
-
-    @Override
-    public void onComplete() {
-
-    }
 
     @Override
     public void onDestroy() {
@@ -60,7 +38,6 @@ public abstract class BaseService extends Service
 
     @CallSuper
     protected void tearDown() {
-        if (currentSocketDisposable != null) currentSocketDisposable.dispose();
         nsdHelper.tearDown();
     }
 
