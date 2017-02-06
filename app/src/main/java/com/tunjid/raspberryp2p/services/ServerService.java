@@ -46,7 +46,7 @@ public class ServerService extends BaseService {
         // Binder impl
     }
 
-    static class ClientThread extends Thread {
+    private static class ClientThread extends Thread {
 
         volatile boolean isRunning;
 

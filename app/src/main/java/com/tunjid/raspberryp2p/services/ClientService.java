@@ -11,9 +11,8 @@ import android.util.Log;
 import com.tunjid.raspberryp2p.abstractclasses.BaseService;
 
 import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 
 public class ClientService extends BaseService {
@@ -50,14 +49,14 @@ public class ClientService extends BaseService {
             messageThread = new MessageThread(serviceInfo, this);
         }
 
-        // If we're already connected to this NsdServiceInfo, return
+        // If we're already connected to this service, return
         else return;
 
         messageThread.start();
     }
 
     public void sendMessage(String message) {
-        new MessageSender(message, messageThread.currentSocket).start();
+        messageThread.send(message);
     }
 
     protected void tearDown() {
@@ -76,38 +75,12 @@ public class ClientService extends BaseService {
         }
     }
 
-    static class MessageSender extends Thread {
-
-        String message;
-        Socket socket;
-
-        MessageSender(String message, Socket socket) {
-            this.message = message;
-            this.socket = socket;
-        }
-
-        @Override
-        public void run() {
-            try {
-                createPrintWriter(socket).println(message);
-            }
-            catch (UnknownHostException e) {
-                Log.d(TAG, "Unknown Host", e);
-            }
-            catch (IOException e) {
-                Log.d(TAG, "I/O Exception", e);
-            }
-            catch (Exception e) {
-                Log.d(TAG, "Error3", e);
-            }
-            Log.d(TAG, "Client sent message: " + message);
-        }
-    }
-
-    static class MessageThread extends Thread {
+    private static class MessageThread extends Thread {
 
         NsdServiceInfo service;
+
         Socket currentSocket;
+        PrintWriter out;
 
         Context context;
 
@@ -123,6 +96,7 @@ public class ClientService extends BaseService {
 
                 currentSocket = new Socket(service.getHost(), service.getPort());
 
+                out = createPrintWriter(currentSocket);
                 BufferedReader in = createBufferedReader(currentSocket);
 
                 Log.d(TAG, "Client-side socket initialized.");
@@ -145,6 +119,10 @@ public class ClientService extends BaseService {
             }
         }
 
+        void send(String message) {
+            new MessageSender(message, this).start();
+        }
+
         synchronized void exit() {
             try {
                 Log.d(TAG, "Exiting message thread.");
@@ -153,6 +131,28 @@ public class ClientService extends BaseService {
             catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private static class MessageSender extends Thread {
+
+        String message;
+        MessageThread messageThread;
+
+        MessageSender(String message, MessageThread messageThread) {
+            this.message = message;
+            this.messageThread = messageThread;
+        }
+
+        @Override
+        public void run() {
+            try {
+                messageThread.out.println(message);
+            }
+            catch (Exception e) {
+                Log.d(TAG, "Error3", e);
+            }
+            Log.d(TAG, "Client sent message: " + message);
         }
     }
 }
