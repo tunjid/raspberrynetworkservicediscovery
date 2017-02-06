@@ -74,7 +74,7 @@ public class ClientFragment extends AutoFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        floatingActionButton.hideTranslate();
+        floatingActionButton.setVisibility(View.GONE);
 
         Intent clientIntent = new Intent(getActivity(), ClientService.class);
         clientIntent.putExtra(ClientService.NSD_SERVICE_INFO_KEY, service);
@@ -86,8 +86,9 @@ public class ClientFragment extends AutoFragment
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        progressDialog = ProgressDialog.show(getActivity(), "",
-                "Loading. Please wait...", true);
+        progressDialog = ProgressDialog.show(getActivity(),
+                getString(R.string.connection_title),
+                getString(R.string.connection_text), true);
     }
 
     @Override
@@ -103,12 +104,12 @@ public class ClientFragment extends AutoFragment
         if (progressDialog != null) progressDialog.dismiss();
 
         // We aren't bound to the same NSD service
-        if (!service.equals(clientService.getService())) getActivity().onBackPressed();
+        if (!service.equals(clientService.getCurrentService())) getActivity().onBackPressed();
     }
 
     @Override
     public void onServiceDisconnected(ComponentName name) {
-        // Not used
+        clientService = null;
     }
 
     @Override
@@ -128,6 +129,5 @@ public class ClientFragment extends AutoFragment
     public void onDestroy() {
         super.onDestroy();
         getActivity().unbindService(this);
-        clientService = null;
     }
 }

@@ -10,7 +10,6 @@ import com.helloworld.utils.baseclasses.BaseActivity;
 import com.helloworld.utils.widget.FloatingActionButton;
 import com.tunjid.raspberryp2p.R;
 import com.tunjid.raspberryp2p.fragments.ServerFragment;
-import com.tunjid.raspberryp2p.fragments.ServerListFragment;
 import com.tunjid.raspberryp2p.services.ServerService;
 
 public class AutoActivity extends BaseActivity
@@ -29,12 +28,6 @@ public class AutoActivity extends BaseActivity
         bindService(server, this, BIND_AUTO_CREATE);
 
         if (savedInstanceState == null) showFragment(ServerFragment.newInstance());
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unbindService(this);
     }
 
     @Override

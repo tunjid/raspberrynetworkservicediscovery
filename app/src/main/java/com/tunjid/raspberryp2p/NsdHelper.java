@@ -180,5 +180,6 @@ public class NsdHelper {
 
     public void tearDown() {
         mNsdManager.unregisterService(mRegistrationListener);
+        mNsdManager.stopServiceDiscovery(mDiscoveryListener);
     }
 }

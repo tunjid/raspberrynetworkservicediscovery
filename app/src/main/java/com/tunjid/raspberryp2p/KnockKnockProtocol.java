@@ -6,7 +6,7 @@ package com.tunjid.raspberryp2p;
  * Created by tj.dahunsi on 2/5/17.
  */
 
-public class KnockKnockProtocol {
+public class KnockKnockProtocol implements CommsProtocol {
     private static final int WAITING = 0;
     private static final int SENTKNOCKKNOCK = 1;
     private static final int SENTCLUE = 2;
@@ -24,6 +24,7 @@ public class KnockKnockProtocol {
             "Is there an owl in here?",
             "Is there an echo in here?"};
 
+    @Override
     public String processInput(String theInput) {
         String theOutput = null;
 

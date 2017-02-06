@@ -15,6 +15,7 @@ import java.net.UnknownHostException;
 
 import io.reactivex.Completable;
 import io.reactivex.CompletableEmitter;
+import io.reactivex.CompletableOnSubscribe;
 import io.reactivex.schedulers.Schedulers;
 
 
@@ -22,10 +23,10 @@ public class ClientService extends BaseService {
 
     private static final String TAG = ClientService.class.getSimpleName();
 
-    public static final String NSD_SERVICE_INFO_KEY = "service key";
+    public static final String NSD_SERVICE_INFO_KEY = "currentService key";
 
     private Socket currentSocket;
-    private NsdServiceInfo service;
+    private NsdServiceInfo currentService;
 
     private final IBinder binder = new NsdClientBinder();
 
@@ -36,30 +37,30 @@ public class ClientService extends BaseService {
 
     @Override
     public IBinder onBind(Intent intent) {
-        service = intent.getParcelableExtra(NSD_SERVICE_INFO_KEY);
+        NsdServiceInfo parceledService = intent.getParcelableExtra(NSD_SERVICE_INFO_KEY);
+
+        // Initialize current servoce if we are starting up the first time
+        if (currentService == null) currentService = parceledService;
+
+            // If we're already connected to this NsdServiceInfo, return
+        else if (parceledService.equals(currentService)) return binder;
+
+            // We're binding to an entirely new service. Tear down the current state
+        else tearDown();
 
         Completable.create(this).subscribeOn(Schedulers.io()).subscribe(this);
+
         return binder;
     }
 
-    public NsdServiceInfo getService() {
-        return service;
+    public NsdServiceInfo getCurrentService() {
+        return currentService;
     }
 
-    public void sendMessage(String msg) {
-        try {
-            createPrintWriter(currentSocket).println(msg);
-        }
-        catch (UnknownHostException e) {
-            Log.d(TAG, "Unknown Host", e);
-        }
-        catch (IOException e) {
-            Log.d(TAG, "I/O Exception", e);
-        }
-        catch (Exception e) {
-            Log.d(TAG, "Error3", e);
-        }
-        Log.d(TAG, "Client sent message: " + msg);
+    public void sendMessage(String message) {
+        Completable.create(new MessageSender(message, currentSocket))
+                .subscribeOn(Schedulers.io())
+                .subscribe();
     }
 
     protected void tearDown() {
@@ -77,7 +78,7 @@ public class ClientService extends BaseService {
     public void subscribe(CompletableEmitter emitter) throws Exception {
         try {
             if (currentSocket == null) {
-                currentSocket = new Socket(service.getHost(), service.getPort());
+                currentSocket = new Socket(currentService.getHost(), currentService.getPort());
 
                 BufferedReader in = createBufferedReader(currentSocket);
 
@@ -101,6 +102,34 @@ public class ClientService extends BaseService {
         // Binder impl
         public ClientService getClientService() {
             return ClientService.this;
+        }
+    }
+
+    static class MessageSender implements CompletableOnSubscribe {
+
+        String message;
+        Socket socket;
+
+        MessageSender(String message, Socket socket) {
+            this.message = message;
+            this.socket = socket;
+        }
+
+        @Override
+        public void subscribe(CompletableEmitter emitter) throws Exception {
+            try {
+                createPrintWriter(socket).println(message);
+            }
+            catch (UnknownHostException e) {
+                Log.d(TAG, "Unknown Host", e);
+            }
+            catch (IOException e) {
+                Log.d(TAG, "I/O Exception", e);
+            }
+            catch (Exception e) {
+                Log.d(TAG, "Error3", e);
+            }
+            Log.d(TAG, "Client sent message: " + message);
         }
     }
 }

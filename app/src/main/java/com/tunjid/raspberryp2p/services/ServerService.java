@@ -5,6 +5,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.tunjid.raspberryp2p.CommsProtocol;
 import com.tunjid.raspberryp2p.KnockKnockProtocol;
 import com.tunjid.raspberryp2p.abstractclasses.BaseService;
 
@@ -96,13 +97,13 @@ public class ServerService extends BaseService {
                     String inputLine, outputLine;
 
                     // Initiate conversation with client
-                    KnockKnockProtocol kkp = new KnockKnockProtocol();
-                    outputLine = kkp.processInput(null);
+                    CommsProtocol commsProtocol = new KnockKnockProtocol();
+                    outputLine = commsProtocol.processInput(null);
 
                     out.println(outputLine);
 
                     while ((inputLine = in.readLine()) != null) {
-                        outputLine = kkp.processInput(inputLine);
+                        outputLine = commsProtocol.processInput(inputLine);
                         out.println(outputLine);
 
                         Log.d(TAG, "Read from client stream: " + inputLine);
