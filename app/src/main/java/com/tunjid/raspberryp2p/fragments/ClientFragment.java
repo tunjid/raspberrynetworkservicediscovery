@@ -14,6 +14,8 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +23,11 @@ import android.widget.EditText;
 
 import com.tunjid.raspberryp2p.R;
 import com.tunjid.raspberryp2p.abstractclasses.AutoFragment;
+import com.tunjid.raspberryp2p.adapters.ChatAdapter;
 import com.tunjid.raspberryp2p.services.ClientService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -39,6 +45,9 @@ public class ClientFragment extends AutoFragment
     private ProgressDialog progressDialog;
 
     private EditText editText;
+    private RecyclerView recyclerView;
+
+    private List<String> responses = new ArrayList<>();
 
     private final IntentFilter clientServiceFilter = new IntentFilter();
 
@@ -48,6 +57,12 @@ public class ClientFragment extends AutoFragment
             switch (intent.getAction()) {
                 case ClientService.ACTION_SOCKET_CONNECTED:
                     if (progressDialog != null) progressDialog.dismiss();
+                    break;
+                case ClientService.ACTION_SERVER_RESPONSE:
+                    String response = intent.getStringExtra(ClientService.DATA_SERVER_RESPONSE);
+
+                    responses.add(response);
+                    recyclerView.getAdapter().notifyItemInserted(responses.size() - 1);
                     break;
             }
         }
@@ -72,6 +87,7 @@ public class ClientFragment extends AutoFragment
         setHasOptionsMenu(true);
 
         clientServiceFilter.addAction(ClientService.ACTION_SOCKET_CONNECTED);
+        clientServiceFilter.addAction(ClientService.ACTION_SERVER_RESPONSE);
 
         service = getArguments().getParcelable(ClientService.NSD_SERVICE_INFO_KEY);
     }
@@ -84,6 +100,10 @@ public class ClientFragment extends AutoFragment
         View rootView = inflater.inflate(R.layout.fragment_client, container, false);
         View send = rootView.findViewById(R.id.send);
         editText = (EditText) rootView.findViewById(R.id.edit_text);
+        recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
+
+        recyclerView.setAdapter(new ChatAdapter(responses));
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         send.setOnClickListener(this);
 
@@ -114,6 +134,7 @@ public class ClientFragment extends AutoFragment
         super.onDestroyView();
 
         editText = null;
+        recyclerView = null;
         progressDialog = null;
     }
 
@@ -142,7 +163,11 @@ public class ClientFragment extends AutoFragment
                 break;
             case R.id.send:
                 if (clientService != null) {
-                    clientService.sendMessage(editText.getText().toString());
+                    String message = editText.getText().toString();
+                    clientService.sendMessage(message);
+
+                    responses.add(message);
+                    recyclerView.getAdapter().notifyItemInserted(responses.size() - 1);
                 }
                 break;
         }

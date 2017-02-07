@@ -20,7 +20,9 @@ public class ClientService extends BaseService {
     private static final String TAG = ClientService.class.getSimpleName();
 
     public static final String NSD_SERVICE_INFO_KEY = "current Service key";
-    public static final String ACTION_SOCKET_CONNECTED = "com.tunjid.raspberryp2p.services.ClientService_socket_connected";
+    public static final String ACTION_SOCKET_CONNECTED = "service_socket_connected";
+    public static final String ACTION_SERVER_RESPONSE = "service_response";
+    public static final String DATA_SERVER_RESPONSE = "service_response";
 
     private MessageThread messageThread;
 
@@ -101,15 +103,23 @@ public class ClientService extends BaseService {
 
                 Log.d(TAG, "Client-side socket initialized.");
 
+                LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(context);
+
                 Intent intent = new Intent();
                 intent.setAction(ACTION_SOCKET_CONNECTED);
 
-                LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
+                broadcastManager.sendBroadcast(intent);
 
                 String fromServer;
 
                 while ((fromServer = in.readLine()) != null) {
                     System.out.println("Server: " + fromServer);
+
+                    Intent serverResponse = new Intent();
+                    serverResponse.setAction(ACTION_SERVER_RESPONSE);
+                    serverResponse.putExtra(DATA_SERVER_RESPONSE, fromServer);
+
+                    broadcastManager.sendBroadcast(serverResponse);
 
                     if (fromServer.equals("Bye.")) break;
                 }

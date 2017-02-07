@@ -5,6 +5,13 @@
     android:layout_height="match_parent"
     tools:context="com.tunjid.raspberryp2p.fragments.ServerListFragment">
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/send"
+        android:layout_alignParentTop="true" />
+
     <EditText
         android:id="@+id/edit_text"
         android:layout_width="match_parent"
@@ -14,12 +21,13 @@
         android:layout_marginLeft="@dimen/single_margin"
         android:layout_toLeftOf="@+id/send" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/send"
         android:layout_width="@dimen/double_margin"
         android:layout_height="@dimen/double_margin"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/single_margin"
+        android:background="?attr/selectableItemBackground"
+        android:layout_margin="@dimen/half_margin"
         app:srcCompat="@drawable/ic_send_black_24dp" />
 </RelativeLayout>
