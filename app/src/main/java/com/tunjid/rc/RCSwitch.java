@@ -88,7 +88,7 @@ public class RCSwitch {
 
     PeripheralManagerService manager = new PeripheralManagerService();
 
-    RCSwitch() {
+    public RCSwitch() {
         this.setRepeatTransmit(10);
         this.setProtocol(1);
         this.setReceiveTolerance(60);
@@ -150,7 +150,7 @@ public class RCSwitch {
      *
      * @param nTransmitterPin Arduino Pin to which the sender is connected to
      */
-    void enableTransmit(String nTransmitterPin) {
+    public void enableTransmit(String nTransmitterPin) {
         this.transmitterPinName = nTransmitterPin;
 
         try {
@@ -473,7 +473,7 @@ public class RCSwitch {
     /**
      * Enable receiving data
      */
-    void enableReceive(String pinName) {
+    public void enableReceive(String pinName) {
         this.interruptPinName = pinName;
         enableReceive();
     }
@@ -509,27 +509,27 @@ public class RCSwitch {
         }
     }
 
-    boolean available() {
+    public boolean isAvailable() {
         return nReceivedValue != 0;
     }
 
-    void resetAvailable() {
+    public void resetAvailable() {
         nReceivedValue = 0;
     }
 
-    long getReceivedValue() {
+    public long getReceivedValue() {
         return nReceivedValue;
     }
 
-    int getReceivedBitlength() {
+    public int getReceivedBitlength() {
         return nReceivedBitlength;
     }
 
-    long getReceivedDelay() {
+    public long getReceivedDelay() {
         return nReceivedDelay;
     }
 
-    int getReceivedProtocol() {
+    public int getReceivedProtocol() {
         return nReceivedProtocol;
     }
 

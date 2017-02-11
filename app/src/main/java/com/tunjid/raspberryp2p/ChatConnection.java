@@ -139,7 +139,7 @@ public class ChatConnection {
 
                 try {
                     // Since discovery will happen via Nsd, we don't need to care which port is
-                    // used.  Just grab an available one  and advertise it via Nsd.
+                    // used.  Just grab an isAvailable one  and advertise it via Nsd.
                     mServerSocket = new ServerSocket(0);
                     setLocalPort(mServerSocket.getLocalPort());
                     

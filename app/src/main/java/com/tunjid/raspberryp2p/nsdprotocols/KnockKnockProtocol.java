@@ -1,7 +1,7 @@
-package com.tunjid.raspberryp2p;
+package com.tunjid.raspberryp2p.nsdprotocols;
 
 /**
- * Sinple protocal for testing
+ * Simple communications protoclol for testing, tells knock knock jokes.
  * <p>
  * Created by tj.dahunsi on 2/5/17.
  */

@@ -5,10 +5,10 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
-import com.tunjid.raspberryp2p.CommsProtocol;
-import com.tunjid.raspberryp2p.KnockKnockProtocol;
 import com.tunjid.raspberryp2p.NsdHelper;
 import com.tunjid.raspberryp2p.abstractclasses.BaseService;
+import com.tunjid.raspberryp2p.nsdprotocols.ProxyProtocol;
+import com.tunjid.raspberryp2p.nsdprotocols.CommsProtocol;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,7 +57,7 @@ public class ServerService extends BaseService {
             helper.initializeRegistrationListener();
 
             // Since discovery will happen via Nsd, we don't need to care which port is
-            // used, just grab an available one and advertise it via Nsd.
+            // used, just grab an isAvailable one and advertise it via Nsd.
             try {
                 serverSocket = new ServerSocket(0);
                 helper.registerService(serverSocket.getLocalPort());
@@ -111,7 +111,7 @@ public class ServerService extends BaseService {
                     String inputLine, outputLine;
 
                     // Initiate conversation with client
-                    CommsProtocol commsProtocol = new KnockKnockProtocol();
+                    CommsProtocol commsProtocol = new ProxyProtocol();
                     outputLine = commsProtocol.processInput(null);
 
                     out.println(outputLine);
