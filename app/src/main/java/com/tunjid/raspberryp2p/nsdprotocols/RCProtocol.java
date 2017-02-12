@@ -63,7 +63,6 @@ class RCProtocol implements CommsProtocol {
         if (input == null) {
             output.response = "Welcome!";
             output.commands.add(ENABLE_SNIFFER);
-            output.commands.add(SNIFF);
         }
         else output.response = "¯\\_(ツ)_/¯";
         return output;

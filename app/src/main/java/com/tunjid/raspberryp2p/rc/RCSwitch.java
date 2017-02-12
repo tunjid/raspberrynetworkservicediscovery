@@ -434,7 +434,8 @@ public class RCSwitch implements Closeable {
         boolean firstLogicLevel = (this.protocol.invertedSignal) ? false : true;
         boolean secondLogicLevel = (this.protocol.invertedSignal) ? true : false;
 
-        new TransmitterThread(firstLogicLevel, secondLogicLevel, transmitter, pulses).start();
+        new TransmitterThread(firstLogicLevel, secondLogicLevel,
+                transmitter, pulses, protocol).start();
     }
 
     /**
@@ -529,19 +530,22 @@ public class RCSwitch implements Closeable {
         if (interruptReceiver != null) interruptReceiver.close();
     }
 
-    private class TransmitterThread extends Thread {
+    private static class TransmitterThread extends Thread {
 
         boolean firstLogicLevel;
         boolean secondLogicLevel;
 
         Gpio transmitter;
         HighLow pulses;
+        Protocol protocol;
 
-        public TransmitterThread(boolean firstLogicLevel, boolean secondLogicLevel, Gpio transmitter, HighLow pulses) {
+        public TransmitterThread(boolean firstLogicLevel, boolean secondLogicLevel,
+                                 Gpio transmitter, HighLow pulses, Protocol protocol) {
             this.firstLogicLevel = firstLogicLevel;
             this.secondLogicLevel = secondLogicLevel;
             this.transmitter = transmitter;
             this.pulses = pulses;
+            this.protocol = protocol;
         }
 
         @Override
