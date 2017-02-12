@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.tunjid.raspberryp2p.fragments.ServerListFragment">
+    tools:context="com.tunjid.raspberrynetworkservicediscovery.fragments.ServerListFragment">
 
     <View
         android:id="@+id/guide_line"

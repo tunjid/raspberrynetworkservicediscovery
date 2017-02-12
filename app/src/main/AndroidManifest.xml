@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.tunjid.raspberryp2p"
+<manifest package="com.tunjid.raspberrynetworkservicediscovery"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission
@@ -16,14 +16,14 @@
             android:required="false" />
 
         <service
-            android:name=".services.ServerService"
+            android:name="com.tunjid.raspberrynetworkservicediscovery.services.ServerService"
             android:enabled="true" />
         <service
-            android:name=".services.ClientService"
+            android:name="com.tunjid.raspberrynetworkservicediscovery.services.ClientService"
             android:enabled="true" />
 
-        <activity android:name=".activities.NsdChatActivity" />
-        <activity android:name=".activities.AutoActivity">
+        <activity android:name="com.tunjid.raspberrynetworkservicediscovery.activities.NsdChatActivity" />
+        <activity android:name="com.tunjid.raspberrynetworkservicediscovery.activities.AutoActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
