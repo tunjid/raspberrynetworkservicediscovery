@@ -112,12 +112,12 @@ public class ServerService extends BaseService {
 
                     // Initiate conversation with client
                     CommsProtocol commsProtocol = new ProxyProtocol();
-                    outputLine = commsProtocol.processInput(null);
+                    outputLine = commsProtocol.processInput(null).serialize();
 
                     out.println(outputLine);
 
                     while ((inputLine = in.readLine()) != null) {
-                        outputLine = commsProtocol.processInput(inputLine);
+                        outputLine = commsProtocol.processInput(inputLine).serialize();
                         out.println(outputLine);
 
                         Log.d(TAG, "Read from client stream: " + inputLine);

@@ -9,8 +9,8 @@ package com.tunjid.raspberryp2p.nsdprotocols;
 public class ProxyProtocol implements CommsProtocol {
 
     private static final String CHOOSER = "choose";
-    private static final String KNOCK_KNOCK = "1";
-    private static final String RC = "2";
+    private static final String KNOCK_KNOCK = "Knock Knock Jokes";
+    private static final String RC = "RC Sniffer";
 
     private boolean choosing;
 
@@ -20,12 +20,16 @@ public class ProxyProtocol implements CommsProtocol {
     }
 
     @Override
-    public String processInput(String input) {
+    public Data processInput(String input) {
+        Data output = new Data();
 
         // First connection
         if (input == null || input.equals(CHOOSER)) {
             choosing = true;
-            return "Please choose the server you want, 1 for Knock Knock jokes, 2 for an RCSniffer";
+            output.response = "Please choose the server you want, Knock Knock jokes, or an RCSniffer";
+            output.commands.add(KNOCK_KNOCK);
+            output.commands.add(RC);
+            return output;
         }
 
         if (choosing) {
@@ -37,15 +41,20 @@ public class ProxyProtocol implements CommsProtocol {
                     commsProtocol = new RCProtocol();
                     break;
                 default:
-                    return "Invalid selection. Choose 1 for Knock Knock jokes, 2 for an RCSniffer";
+                    output.response = "Invalid command. Please choose the server you want, Knock Knock jokes, or an RCSniffer";
+                    output.commands.add(KNOCK_KNOCK);
+                    output.commands.add(RC);
+                    return output;
             }
             choosing = false;
 
             String result = "Chose Protocol: " + commsProtocol.getClass().getSimpleName();
             result += "\n";
-            result += commsProtocol.processInput(null);
 
-            return result;
+            output = commsProtocol.processInput(null);
+            output.response = result + output.response;
+
+            return output;
         }
         return commsProtocol.processInput(input);
     }

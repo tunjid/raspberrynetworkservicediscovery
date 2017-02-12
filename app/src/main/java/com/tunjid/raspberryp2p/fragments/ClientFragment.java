@@ -24,6 +24,7 @@ import android.widget.EditText;
 import com.tunjid.raspberryp2p.R;
 import com.tunjid.raspberryp2p.abstractclasses.AutoFragment;
 import com.tunjid.raspberryp2p.adapters.ChatAdapter;
+import com.tunjid.raspberryp2p.nsdprotocols.Data;
 import com.tunjid.raspberryp2p.services.ClientService;
 
 import java.util.ArrayList;
@@ -35,7 +36,8 @@ import java.util.List;
 public class ClientFragment extends AutoFragment
         implements
         ServiceConnection,
-        View.OnClickListener {
+        View.OnClickListener,
+        ChatAdapter.ChatAdapterListener {
 
     private boolean isReceiverRegistered;
 
@@ -45,9 +47,11 @@ public class ClientFragment extends AutoFragment
     private ProgressDialog progressDialog;
 
     private EditText editText;
-    private RecyclerView recyclerView;
+    private RecyclerView historyView;
+    private RecyclerView commandsView;
 
     private List<String> responses = new ArrayList<>();
+    private List<String> commands = new ArrayList<>();
 
     private final IntentFilter clientServiceFilter = new IntentFilter();
 
@@ -60,10 +64,16 @@ public class ClientFragment extends AutoFragment
                     break;
                 case ClientService.ACTION_SERVER_RESPONSE:
                     String response = intent.getStringExtra(ClientService.DATA_SERVER_RESPONSE);
+                    Data data = Data.deserialize(response);
 
-                    responses.add(response);
-                    recyclerView.getAdapter().notifyItemInserted(responses.size() - 1);
-                    recyclerView.smoothScrollToPosition(responses.size() - 1);
+                    commands.clear();
+                    commands.addAll(data.getCommands());
+
+                    commandsView.getAdapter().notifyDataSetChanged();
+
+                    responses.add(data.getResponse());
+                    historyView.getAdapter().notifyItemInserted(responses.size() - 1);
+                    historyView.smoothScrollToPosition(responses.size() - 1);
                     break;
             }
         }
@@ -101,10 +111,17 @@ public class ClientFragment extends AutoFragment
         View rootView = inflater.inflate(R.layout.fragment_client, container, false);
         View send = rootView.findViewById(R.id.send);
         editText = (EditText) rootView.findViewById(R.id.edit_text);
-        recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
+        historyView = (RecyclerView) rootView.findViewById(R.id.list);
+        commandsView = (RecyclerView) rootView.findViewById(R.id.commands);
 
-        recyclerView.setAdapter(new ChatAdapter(responses));
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        historyView.setAdapter(new ChatAdapter(responses));
+        historyView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        ChatAdapter commandsAdapter = new ChatAdapter(commands);
+        commandsAdapter.setAdapterListener(this);
+
+        commandsView.setAdapter(commandsAdapter);
+        commandsView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
         send.setOnClickListener(this);
 
@@ -135,7 +152,8 @@ public class ClientFragment extends AutoFragment
         super.onDestroyView();
 
         editText = null;
-        recyclerView = null;
+        historyView = null;
+        commandsView = null;
         progressDialog = null;
     }
 
@@ -168,7 +186,7 @@ public class ClientFragment extends AutoFragment
                     clientService.sendMessage(message);
 
                     responses.add(message);
-                    recyclerView.getAdapter().notifyItemInserted(responses.size() - 1);
+                    historyView.getAdapter().notifyItemInserted(responses.size() - 1);
                 }
                 break;
         }
@@ -179,5 +197,15 @@ public class ClientFragment extends AutoFragment
         super.onDestroy();
         getActivity().unbindService(this);
         LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(clientServiceReceiever);
+    }
+
+    @Override
+    public void onTextClicked(String text) {
+        if (clientService != null) {
+            clientService.sendMessage(text);
+
+            responses.add(text);
+            historyView.getAdapter().notifyItemInserted(responses.size() - 1);
+        }
     }
 }

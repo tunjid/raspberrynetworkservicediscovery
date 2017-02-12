@@ -1,5 +1,7 @@
 package com.tunjid.raspberryp2p.nsdprotocols;
 
+import java.util.List;
+
 /**
  * Interface for Server communication with input from client
  * <p>
@@ -8,6 +10,6 @@ package com.tunjid.raspberryp2p.nsdprotocols;
 
 public interface CommsProtocol {
 
-    String processInput(String input);
+    Data processInput(String input);
 
 }

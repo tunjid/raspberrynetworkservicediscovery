@@ -451,13 +451,23 @@ public class RCSwitch implements Closeable {
             nReceivedBitlength = 0;
 
             try {
-                Looper.prepare();
                 interruptReceiver = manager.openGpio(interruptPinName);
                 interruptReceiver.setDirection(Gpio.DIRECTION_IN);
-                interruptReceiver.setActiveType(Gpio.ACTIVE_LOW);
                 interruptReceiver.setEdgeTriggerType(Gpio.EDGE_BOTH);
-                interruptReceiver.registerGpioCallback(interruptCallback);
-                Looper.loop();
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Looper.prepare();
+                            interruptReceiver.registerGpioCallback(interruptCallback);
+                            Looper.loop();
+                        }
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
             }
             catch (Exception e) {
                 e.printStackTrace();

@@ -17,7 +17,7 @@ import java.util.List;
  * Created by tj.dahunsi on 2/4/17.
  */
 
-public class ChatAdapter extends BaseRecyclerViewAdapter<ChatAdapter.TextViewHolder, BaseRecyclerViewAdapter.AdapterListener> {
+public class ChatAdapter extends BaseRecyclerViewAdapter<ChatAdapter.TextViewHolder, ChatAdapter.ChatAdapterListener> {
 
     private List<String> responses;
 
@@ -27,13 +27,13 @@ public class ChatAdapter extends BaseRecyclerViewAdapter<ChatAdapter.TextViewHol
 
     @Override
     public TextViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.viewholder_nsd_list, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.viewholder_responses, parent, false);
         return new TextViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(TextViewHolder holder, int position) {
-        holder.bind(responses.get(position));
+        holder.bind(responses.get(position),  getAdapterListener());
     }
 
     @Override
@@ -41,18 +41,32 @@ public class ChatAdapter extends BaseRecyclerViewAdapter<ChatAdapter.TextViewHol
         return responses.size();
     }
 
-    static class TextViewHolder extends BaseViewHolder<BaseRecyclerViewAdapter.AdapterListener>{
+    public interface ChatAdapterListener extends BaseRecyclerViewAdapter.AdapterListener {
+        void onTextClicked(String text);
+    }
 
+    static class TextViewHolder extends BaseViewHolder<ChatAdapterListener>
+            implements View.OnClickListener {
+
+        String text;
         TextView textView;
 
         TextViewHolder(View itemView) {
             super(itemView);
             textView = (TextView) itemView.findViewById(R.id.text);
+            textView.setOnClickListener(this);
         }
 
-        void bind(String text) {
+        void bind(String text, ChatAdapterListener listener) {
+            this.text = text;
+
             textView.setText(text);
+            adapterListener = listener;
         }
 
+        @Override
+        public void onClick(View v) {
+            adapterListener.onTextClicked(text);
+        }
     }
 }

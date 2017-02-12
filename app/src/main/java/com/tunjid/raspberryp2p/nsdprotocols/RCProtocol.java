@@ -24,36 +24,45 @@ public class RCProtocol implements CommsProtocol {
     }
 
     @Override
-    public String processInput(String input) {
-        StringBuilder output = new StringBuilder();
+    public Data processInput(String input) {
+        Data output = new Data();
 
         if (input != null) {
             switch (input) {
                 case ENABLE_SNIFFER:
                     rcSwitch.enableReceive(INTERRUPT_PIN);
-                    return "Sniffer Enabled";
+                    output.response = "Sniffer Enabled";
+                    output.commands.add("sniff");
+
+                    return output;
                 case SNIFF:
+                    StringBuilder builder = new StringBuilder();
+
                     if (rcSwitch.isAvailable() && rcSwitch.getReceivedValue() != 0) {
-                        output.append("Received ");
-                        output.append(rcSwitch.getReceivedValue());
-                        output.append(" / ");
-                        output.append(rcSwitch.getReceivedBitlength());
-                        output.append("bit ");
-                        output.append("Protocol: ");
-                        output.append("\n");
-                        output.append(rcSwitch.getReceivedProtocol());
-                        output.append("Delay (Pulse Length): ");
-                        output.append("\n");
-                        output.append(rcSwitch.getReceivedDelay());
+
+                        builder.append("Received ");
+                        builder.append(rcSwitch.getReceivedValue());
+                        builder.append(" / ");
+                        builder.append(rcSwitch.getReceivedBitlength());
+                        builder.append("bit ");
+                        builder.append("Protocol: ");
+                        builder.append("\n");
+                        builder.append(rcSwitch.getReceivedProtocol());
+                        builder.append("Delay (Pulse Length): ");
+                        builder.append("\n");
+                        builder.append(rcSwitch.getReceivedDelay());
                     }
                     else if (rcSwitch.isAvailable() && rcSwitch.getReceivedValue() == 0) {
-                        output.append("Unkown Encoding");
+                        builder.append("Unkown Encoding");
                     }
+                    output.response = builder.toString();
+                    output.commands.add("sniff");
                     rcSwitch.resetAvailable();
 
                     break;
             }
         }
-        return TextUtils.isEmpty(output) ? "Shrug" : output.toString();
+        if (TextUtils.isEmpty(output.response)) output.response = "¯\\_(ツ)_/¯";
+        return output;
     }
 }

@@ -25,50 +25,56 @@ public class KnockKnockProtocol implements CommsProtocol {
             "Is there an echo in here?"};
 
     @Override
-    public String processInput(String theInput) {
-        String theOutput = null;
+    public Data processInput(String input) {
+        Data output = new Data();
 
         if (state == WAITING) {
-            theOutput = "Knock! Knock!";
+            output.response = "Knock! Knock!";
+            output.commands.add("Who's there?");
             state = SENTKNOCKKNOCK;
         }
         else if (state == SENTKNOCKKNOCK) {
-            if (theInput.trim().equalsIgnoreCase("Who's there?")) {
-                theOutput = clues[currentJoke];
+            if (input.trim().equalsIgnoreCase("Who's there?")) {
+                output.response = clues[currentJoke];
+                output.commands.add(output.response + " who?");
                 state = SENTCLUE;
             }
             else {
-                theOutput = "You're supposed to say \"Who's there?\"! " +
+                output.response = "You're supposed to say \"Who's there?\"! " +
                         "Try again. Knock! Knock!";
+                output.commands.add("Who's there?");
             }
         }
         else if (state == SENTCLUE) {
-            if (theInput.equalsIgnoreCase(clues[currentJoke] + " who?")) {
-                theOutput = answers[currentJoke] + " Want another? (y/n)";
+            if (input.equalsIgnoreCase(clues[currentJoke] + " who?")) {
+                output.response = answers[currentJoke] + " Want another? (y/n)";
+                output.commands.add("y");
+                output.commands.add("n");
                 state = ANOTHER;
             }
             else {
-                theOutput = "You're supposed to say \"" +
+                output.response = "You're supposed to say \"" +
                         clues[currentJoke] +
                         " who?\"" +
                         "! Try again. Knock! Knock!";
+                output.commands.add("Who's there?");
                 state = SENTKNOCKKNOCK;
             }
         }
         else if (state == ANOTHER) {
-            if (theInput.equalsIgnoreCase("y")) {
-                theOutput = "Knock! Knock!";
-                if (currentJoke == (NUMJOKES - 1))
-                    currentJoke = 0;
-                else
-                    currentJoke++;
+            if (input.equalsIgnoreCase("y")) {
+                output.response = "Knock! Knock!";
+                output.commands.add("Who's there?");
+
+                if (currentJoke == (NUMJOKES - 1)) currentJoke = 0;
+                else currentJoke++;
                 state = SENTKNOCKKNOCK;
             }
             else {
-                theOutput = "Bye.";
+                output.response = "Bye.";
                 state = WAITING;
             }
         }
-        return theOutput;
+        return output;
     }
 }
