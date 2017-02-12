@@ -50,6 +50,7 @@ public class ProxyProtocol implements CommsProtocol {
 
             String result = "Chose Protocol: " + commsProtocol.getClass().getSimpleName();
             result += "\n";
+            result += "\n";
 
             output = commsProtocol.processInput(null);
             output.response = result + output.response;

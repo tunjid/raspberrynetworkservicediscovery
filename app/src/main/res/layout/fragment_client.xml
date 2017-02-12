@@ -5,44 +5,29 @@
     android:layout_height="match_parent"
     tools:context="com.tunjid.raspberryp2p.fragments.ServerListFragment">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/list"
+    <View
+        android:id="@+id/guide_line"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_alignParentTop="true"
-        app:layout_constraintBottom_toTopOf="@+id/edit_text"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <EditText
-        android:id="@+id/edit_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_gravity="bottom"
-        android:layout_marginLeft="@dimen/single_margin"
-        android:layout_toLeftOf="@+id/send"
+        android:layout_height="1px"
+        android:background="@color/black"
         app:layout_constraintBottom_toTopOf="@+id/commands"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toLeftOf="@+id/send" />
-
-    <ImageButton
-        android:id="@+id/send"
-        android:layout_width="@dimen/double_margin"
-        android:layout_height="@dimen/double_margin"
-        android:layout_margin="@dimen/half_margin"
-        android:background="?attr/selectableItemBackground"
-        app:layout_constraintBottom_toTopOf="@+id/commands"
-        app:layout_constraintRight_toRightOf="parent"
-        app:srcCompat="@drawable/ic_send_black_24dp" />
+        app:layout_constraintRight_toRightOf="parent" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/commands"
         android:layout_width="0dp"
         android:layout_height="56dp"
-        android:layout_above="@+id/send"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/guide_line"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

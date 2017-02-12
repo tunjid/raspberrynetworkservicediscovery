@@ -19,7 +19,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 
 import com.tunjid.raspberryp2p.R;
 import com.tunjid.raspberryp2p.abstractclasses.AutoFragment;
@@ -36,7 +35,6 @@ import java.util.List;
 public class ClientFragment extends AutoFragment
         implements
         ServiceConnection,
-        View.OnClickListener,
         ChatAdapter.ChatAdapterListener {
 
     private boolean isReceiverRegistered;
@@ -46,7 +44,6 @@ public class ClientFragment extends AutoFragment
 
     private ProgressDialog progressDialog;
 
-    private EditText editText;
     private RecyclerView historyView;
     private RecyclerView commandsView;
 
@@ -109,8 +106,7 @@ public class ClientFragment extends AutoFragment
         // Inflate the layout for this fragment
 
         View rootView = inflater.inflate(R.layout.fragment_client, container, false);
-        View send = rootView.findViewById(R.id.send);
-        editText = (EditText) rootView.findViewById(R.id.edit_text);
+
         historyView = (RecyclerView) rootView.findViewById(R.id.list);
         commandsView = (RecyclerView) rootView.findViewById(R.id.commands);
 
@@ -122,8 +118,6 @@ public class ClientFragment extends AutoFragment
 
         commandsView.setAdapter(commandsAdapter);
         commandsView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-
-        send.setOnClickListener(this);
 
         return rootView;
     }
@@ -151,7 +145,6 @@ public class ClientFragment extends AutoFragment
     public void onDestroyView() {
         super.onDestroyView();
 
-        editText = null;
         historyView = null;
         commandsView = null;
         progressDialog = null;
@@ -173,23 +166,6 @@ public class ClientFragment extends AutoFragment
     @Override
     public void onServiceDisconnected(ComponentName name) {
         clientService = null;
-    }
-
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.fab:
-                break;
-            case R.id.send:
-                if (clientService != null) {
-                    String message = editText.getText().toString();
-                    clientService.sendMessage(message);
-
-                    responses.add(message);
-                    historyView.getAdapter().notifyItemInserted(responses.size() - 1);
-                }
-                break;
-        }
     }
 
     @Override

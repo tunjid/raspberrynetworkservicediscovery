@@ -1,7 +1,5 @@
 package com.tunjid.raspberryp2p.nsdprotocols;
 
-import android.text.TextUtils;
-
 import com.tunjid.raspberryp2p.rc.RCSwitch;
 
 /**
@@ -10,17 +8,17 @@ import com.tunjid.raspberryp2p.rc.RCSwitch;
  * Created by tj.dahunsi on 2/11/17.
  */
 
-public class RCProtocol implements CommsProtocol {
+class RCProtocol implements CommsProtocol {
 
-    public static final String ENABLE_SNIFFER = "enable sniffer";
-    public static final String SNIFF = "sniff";
+    private static final String ENABLE_SNIFFER = "Enable Sniffer";
+    private static final String SNIFF = "Sniff";
 
     private static final String INTERRUPT_PIN = "BCM21";
-    private static final String TRANSMITTER_PIN = "BCM21";
+    //private static final String TRANSMITTER_PIN = "BCM21";
 
-    RCSwitch rcSwitch = new RCSwitch();
+    private RCSwitch rcSwitch = new RCSwitch();
 
-    public RCProtocol() {
+    RCProtocol() {
     }
 
     @Override
@@ -32,7 +30,7 @@ public class RCProtocol implements CommsProtocol {
                 case ENABLE_SNIFFER:
                     rcSwitch.enableReceive(INTERRUPT_PIN);
                     output.response = "Sniffer Enabled";
-                    output.commands.add("sniff");
+                    output.commands.add(SNIFF);
 
                     return output;
                 case SNIFF:
@@ -56,13 +54,18 @@ public class RCProtocol implements CommsProtocol {
                         builder.append("Unkown Encoding");
                     }
                     output.response = builder.toString();
-                    output.commands.add("sniff");
+                    output.commands.add(SNIFF);
                     rcSwitch.resetAvailable();
 
                     break;
             }
         }
-        if (TextUtils.isEmpty(output.response)) output.response = "¯\\_(ツ)_/¯";
+        if (input == null) {
+            output.response = "Welcome!";
+            output.commands.add(ENABLE_SNIFFER);
+            output.commands.add(SNIFF);
+        }
+        else output.response = "¯\\_(ツ)_/¯";
         return output;
     }
 }
