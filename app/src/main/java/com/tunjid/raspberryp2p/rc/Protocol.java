@@ -1,4 +1,4 @@
-package com.tunjid.rc;
+package com.tunjid.raspberryp2p.rc;
 
 /**
  * Protocol class

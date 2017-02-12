@@ -2,7 +2,7 @@ package com.tunjid.raspberryp2p.nsdprotocols;
 
 import android.text.TextUtils;
 
-import com.tunjid.rc.RCSwitch;
+import com.tunjid.raspberryp2p.rc.RCSwitch;
 
 /**
  * A protocol for communicating with RF 433 MhZ devices
