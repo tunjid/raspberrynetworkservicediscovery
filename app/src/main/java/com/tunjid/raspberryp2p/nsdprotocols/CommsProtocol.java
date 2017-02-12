@@ -1,5 +1,6 @@
 package com.tunjid.raspberryp2p.nsdprotocols;
 
+import java.io.Closeable;
 import java.util.List;
 
 /**
@@ -8,7 +9,7 @@ import java.util.List;
  * Created by tj.dahunsi on 2/6/17.
  */
 
-public interface CommsProtocol {
+public interface CommsProtocol extends Closeable {
 
     Data processInput(String input);
 

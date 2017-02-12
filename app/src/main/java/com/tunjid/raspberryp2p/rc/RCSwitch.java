@@ -20,6 +20,8 @@ import java.io.IOException;
 
 public class RCSwitch implements Closeable {
 
+    private static final String TAG = "RCSwitch";
+
     private static final int RCSWITCH_MAX_CHANGES = 67;
 
     private static int nReceiveTolerance = 60;
@@ -62,7 +64,7 @@ public class RCSwitch implements Closeable {
 
     private final GpioCallback interruptCallback = new InterruptCallback();
 
-    PeripheralManagerService manager = new PeripheralManagerService();
+    private PeripheralManagerService manager = new PeripheralManagerService();
 
     public RCSwitch() {
         this.setRepeatTransmit(10);
@@ -569,7 +571,7 @@ public class RCSwitch implements Closeable {
         @Override
         public boolean onGpioEdge(Gpio gpio) {
 
-            long time = System.currentTimeMillis();
+            long time = System.nanoTime() / 1000;
             long duration = time - lastTime;
 
             if (duration > nSeparationLimit) {
@@ -586,6 +588,7 @@ public class RCSwitch implements Closeable {
                         for (int i = 1; i <= PROTOCOLS.length; i++) {
                             if (receiveProtocol(i, changeCount)) {
                                 // receive succeeded for protocol i
+                                Log.d(TAG, "Receive succeeded for protocol: " + i);
                                 break;
                             }
                         }

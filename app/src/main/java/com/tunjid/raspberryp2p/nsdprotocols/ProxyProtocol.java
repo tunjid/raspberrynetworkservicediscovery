@@ -1,5 +1,7 @@
 package com.tunjid.raspberryp2p.nsdprotocols;
 
+import java.io.IOException;
+
 /**
  * A protocol that proxies requests to aanother {@link CommsProtocol}of a user's choosing
  * <p>
@@ -58,5 +60,10 @@ public class ProxyProtocol implements CommsProtocol {
             return output;
         }
         return commsProtocol.processInput(input);
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (commsProtocol != null) commsProtocol.close();
     }
 }

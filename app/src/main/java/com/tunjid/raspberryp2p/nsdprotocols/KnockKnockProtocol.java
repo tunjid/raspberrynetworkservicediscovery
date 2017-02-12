@@ -1,5 +1,7 @@
 package com.tunjid.raspberryp2p.nsdprotocols;
 
+import java.io.IOException;
+
 /**
  * Simple communications protoclol for testing, tells knock knock jokes.
  * <p>
@@ -76,5 +78,10 @@ class KnockKnockProtocol implements CommsProtocol {
             }
         }
         return output;
+    }
+
+    @Override
+    public void close() throws IOException {
+        state = WAITING;
     }
 }

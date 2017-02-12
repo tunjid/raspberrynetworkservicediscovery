@@ -103,6 +103,8 @@ public class ServerService extends BaseService {
             Log.d(TAG, "Connected to new client");
 
             if (socket != null && socket.isConnected()) {
+                CommsProtocol commsProtocol = new ProxyProtocol();
+
                 try {
 
                     PrintWriter out = createPrintWriter(socket);
@@ -111,7 +113,6 @@ public class ServerService extends BaseService {
                     String inputLine, outputLine;
 
                     // Initiate conversation with client
-                    CommsProtocol commsProtocol = new ProxyProtocol();
                     outputLine = commsProtocol.processInput(null).serialize();
 
                     out.println(outputLine);
@@ -125,11 +126,19 @@ public class ServerService extends BaseService {
                         if (outputLine.equals("Bye.")) break;
                     }
 
-
+                    // Close protocol
+                    commsProtocol.close();
                     in.close();
                 }
                 catch (IOException e) {
                     e.printStackTrace();
+                    // Try to close protocol if disconnected
+                    try {
+                        commsProtocol.close();
+                    }
+                    catch (IOException e2) {
+                        e2.printStackTrace();
+                    }
                 }
             }
         }

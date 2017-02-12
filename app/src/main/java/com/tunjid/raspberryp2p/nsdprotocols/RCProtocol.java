@@ -2,6 +2,8 @@ package com.tunjid.raspberryp2p.nsdprotocols;
 
 import com.tunjid.raspberryp2p.rc.RCSwitch;
 
+import java.io.IOException;
+
 /**
  * A protocol for communicating with RF 433 MhZ devices
  * <p>
@@ -66,5 +68,10 @@ class RCProtocol implements CommsProtocol {
         }
         else output.response = "¯\\_(ツ)_/¯";
         return output;
+    }
+
+    @Override
+    public void close() throws IOException {
+        rcSwitch.close();
     }
 }
