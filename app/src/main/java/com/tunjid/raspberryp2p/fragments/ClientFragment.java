@@ -63,6 +63,7 @@ public class ClientFragment extends AutoFragment
 
                     responses.add(response);
                     recyclerView.getAdapter().notifyItemInserted(responses.size() - 1);
+                    recyclerView.smoothScrollToPosition(responses.size() - 1);
                     break;
             }
         }

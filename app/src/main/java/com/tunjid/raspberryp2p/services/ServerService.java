@@ -7,8 +7,8 @@ import android.util.Log;
 
 import com.tunjid.raspberryp2p.NsdHelper;
 import com.tunjid.raspberryp2p.abstractclasses.BaseService;
-import com.tunjid.raspberryp2p.nsdprotocols.ProxyProtocol;
 import com.tunjid.raspberryp2p.nsdprotocols.CommsProtocol;
+import com.tunjid.raspberryp2p.nsdprotocols.ProxyProtocol;
 
 import java.io.BufferedReader;
 import java.io.IOException;

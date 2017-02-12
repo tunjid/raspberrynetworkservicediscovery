@@ -1,72 +1,47 @@
 package com.tunjid.rc;
 
+import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.google.android.things.pio.Gpio;
 import com.google.android.things.pio.GpioCallback;
 import com.google.android.things.pio.PeripheralManagerService;
 
+import java.io.Closeable;
+import java.io.IOException;
+
 /**
+ * Java port of RCSwitch - Arduino libary for remote control outlet switches
+ * by Suat Özgür. https://github.com/sui77/rc-switch/
+ * <p>
  * Created by tj.dahunsi on 2/10/17.
  */
 
-    /*
-  RCSwitch - Arduino libary for remote control outlet switches
-  Copyright (c) 2011 Suat Özgür.  All right reserved.
-
-  Contributors:
-  - Andre Koehler / info(at)tomate-online(dot)de
-  - Gordeev Andrey Vladimirovich / gordeev(at)openpyro(dot)com
-  - Skineffect / http://forum.ardumote.com/viewtopic.php?f=2&t=46
-  - Dominik Fischer / dom_fischer(at)web(dot)de
-  - Frank Oltmanns / <first name>.<last name>(at)gmail(dot)com
-  - Andreas Steinel / A.<lastname>(at)gmail(dot)com
-  - Max Horn / max(at)quendi(dot)de
-  - Robert ter Vehn / <first name>.<last name>(at)gmail(dot)com
-  - Johann Richard / <first name>.<last name>(at)gmail(dot)com
-  - Vlad Gheorghe / <first name>.<last name>(at)gmail(dot)com https://github.com/vgheo
-
-  Project home: https://github.com/sui77/rc-switch/
-
-  This library is free software; you can redistribute it and/or
-  modify it under the terms of the GNU Lesser General Public
-  License as published by the Free Software Foundation; either
-  version 2.1 of the License, or (at your option) any later version.
-
-  This library is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-  Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with this library; if not, write to the Free Software
-  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
-
-public class RCSwitch {
+public class RCSwitch implements Closeable {
 
     private static final int RCSWITCH_MAX_CHANGES = 67;
 
-    static int nReceiveTolerance = 60;
-    static int nReceivedBitlength = 0;
-    static int nReceivedProtocol = 0;
+    private static int nReceiveTolerance = 60;
+    private static int nReceivedBitlength = 0;
+    private static int nReceivedProtocol = 0;
 
-    static long nReceivedValue = 0;
-    static long nReceivedDelay = 0;
+    private static long nReceivedValue = 0;
+    private static long nReceivedDelay = 0;
 
-    static final int nSeparationLimit = 4300;
+    private static final int nSeparationLimit = 4300;
 
     // Interrupt vars
-    static int changeCount = 0;
-    static int repeatCount = 0;
-    static long lastTime = 0;
+    private static int changeCount = 0;
+    private static int repeatCount = 0;
+    private static long lastTime = 0;
 
     /*
      * timings[0] contains sync timing, followed by a number of bits
      */
-    static long[] timings = new long[RCSWITCH_MAX_CHANGES];
+    private static long[] timings = new long[RCSWITCH_MAX_CHANGES];
 
-    static final Protocol PROTOCOLS[] = {
+    private static final Protocol PROTOCOLS[] = {
             new Protocol(false, 350, new HighLow(1, 31), new HighLow(1, 3), new HighLow(3, 1)),    // protocol 1
             new Protocol(false, 650, new HighLow(1, 10), new HighLow(1, 2), new HighLow(2, 1)),    // protocol 2
             new Protocol(false, 100, new HighLow(30, 71), new HighLow(4, 11), new HighLow(9, 6)),    // protocol 3
@@ -75,16 +50,17 @@ public class RCSwitch {
             new Protocol(true, 450, new HighLow(23, 1), new HighLow(1, 2), new HighLow(2, 1))      // protocol 6 (HT6P20B)
     };
 
-    int nRepeatTransmit;
+    private int nRepeatTransmit;
 
-    String interruptPinName;
-    String transmitterPinName;
+    private String interruptPinName;
+    private String transmitterPinName;
 
-    Protocol protocol;
+    private Protocol protocol;
 
-    Gpio transmitter;
-    Gpio interruptReceiver;
-    final GpioCallback interruptCallback = new InterruptCallback();
+    private Gpio transmitter;
+    private Gpio interruptReceiver;
+
+    private final GpioCallback interruptCallback = new InterruptCallback();
 
     PeripheralManagerService manager = new PeripheralManagerService();
 
@@ -120,7 +96,6 @@ public class RCSwitch {
         this.setPulseLength(nPulseLength);
     }
 
-
     /**
      * Sets pulse length in microseconds
      */
@@ -138,23 +113,20 @@ public class RCSwitch {
     /**
      * Set Receiving Tolerance
      */
-    //#if not defined( RCSwitchDisableReceiving )
     void setReceiveTolerance(int nPercent) {
         nReceiveTolerance = nPercent;
     }
-    //#endif
-
 
     /**
      * Enable transmissions
      *
-     * @param nTransmitterPin Arduino Pin to which the sender is connected to
+     * @param transmitterPin Arduino Pin to which the sender is connected to
      */
-    public void enableTransmit(String nTransmitterPin) {
-        this.transmitterPinName = nTransmitterPin;
+    public void enableTransmit(String transmitterPin) {
+        this.transmitterPinName = transmitterPin;
 
         try {
-            manager.openGpio(nTransmitterPin);
+            transmitter = manager.openGpio(transmitterPin);
             transmitter.setDirection(Gpio.DIRECTION_OUT_INITIALLY_LOW);
         }
         catch (Exception e) {
@@ -465,11 +437,6 @@ public class RCSwitch {
         new TransmitterThread(firstLogicLevel, secondLogicLevel, transmitter, pulses).start();
     }
 
-
-    //#if
-
-    //not defined(RCSwitchDisableReceiving)
-
     /**
      * Enable receiving data
      */
@@ -484,10 +451,13 @@ public class RCSwitch {
             nReceivedBitlength = 0;
 
             try {
+                Looper.prepare();
                 interruptReceiver = manager.openGpio(interruptPinName);
                 interruptReceiver.setDirection(Gpio.DIRECTION_IN);
+                interruptReceiver.setActiveType(Gpio.ACTIVE_LOW);
                 interruptReceiver.setEdgeTriggerType(Gpio.EDGE_BOTH);
                 interruptReceiver.registerGpioCallback(interruptCallback);
+                Looper.loop();
             }
             catch (Exception e) {
                 e.printStackTrace();
@@ -543,6 +513,12 @@ public class RCSwitch {
         return (res < 0) ? -res : res;
     }
 
+    @Override
+    public void close() throws IOException {
+        if (transmitter != null) transmitter.close();
+        if (interruptReceiver != null) interruptReceiver.close();
+    }
+
     private class TransmitterThread extends Thread {
 
         boolean firstLogicLevel;
@@ -556,7 +532,6 @@ public class RCSwitch {
             this.secondLogicLevel = secondLogicLevel;
             this.transmitter = transmitter;
             this.pulses = pulses;
-
         }
 
         @Override
@@ -575,7 +550,7 @@ public class RCSwitch {
     }
 
 
-    private class InterruptCallback extends GpioCallback {
+    private static class InterruptCallback extends GpioCallback {
 
         @Override
         public boolean onGpioEdge(Gpio gpio) {
@@ -616,6 +591,11 @@ public class RCSwitch {
             lastTime = time;
 
             return true;
+        }
+
+        @Override
+        public void onGpioError(Gpio gpio, int error) {
+            Log.w("TEST", gpio + ": Error event " + error);
         }
 
         boolean receiveProtocol(int p, int changeCount) {
