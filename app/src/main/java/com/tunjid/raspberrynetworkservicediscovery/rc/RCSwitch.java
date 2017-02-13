@@ -461,6 +461,8 @@ public class RCSwitch implements Closeable {
                 interruptReceiver.setDirection(Gpio.DIRECTION_IN);
                 interruptReceiver.setEdgeTriggerType(Gpio.EDGE_BOTH);
 
+                // GPIO callback uses a Handler internally.
+                // Spurn a new thread and prepare a looper on it for the Handler.
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
