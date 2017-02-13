@@ -69,7 +69,10 @@ public class RCSwitch implements Closeable {
     public RCSwitch() {
         this.setRepeatTransmit(10);
         this.setProtocol(1);
-        this.setReceiveTolerance(5000);
+        // Android things GPI0 interface is incredibly slow.
+        // The receive tolerance is 60% on Arduino, here it has to be > 400%,
+        // and many bits will be droped.
+        this.setReceiveTolerance(400);
         nReceivedValue = 0;
     }
 
