@@ -69,7 +69,7 @@ public class RCSwitch implements Closeable {
     public RCSwitch() {
         this.setRepeatTransmit(10);
         this.setProtocol(1);
-        this.setReceiveTolerance(60);
+        this.setReceiveTolerance(5000);
         nReceivedValue = 0;
     }
 
@@ -483,6 +483,7 @@ public class RCSwitch implements Closeable {
      */
     void disableReceive() {
         try {
+            interruptReceiver.unregisterGpioCallback(interruptCallback);
             interruptReceiver.close();
             interruptReceiver = null;
             interruptPinName = null;
@@ -588,7 +589,6 @@ public class RCSwitch implements Closeable {
                         for (int i = 1; i <= PROTOCOLS.length; i++) {
                             if (receiveProtocol(i, changeCount)) {
                                 // receive succeeded for protocol i
-                                Log.d(TAG, "Receive succeeded for protocol: " + i);
                                 break;
                             }
                         }
@@ -612,11 +612,11 @@ public class RCSwitch implements Closeable {
 
         @Override
         public void onGpioError(Gpio gpio, int error) {
-            Log.w("TEST", gpio + ": Error event " + error);
+            Log.w(TAG, gpio + ": Error event " + error);
         }
 
-        boolean receiveProtocol(int p, int changeCount) {
-            Protocol pro = new Protocol(PROTOCOLS[p - 1]);
+        boolean receiveProtocol(int protocolNumber, int changeCount) {
+            Protocol pro = new Protocol(PROTOCOLS[protocolNumber - 1]);
 
             long code = 0;
             //Assuming the longer pulse length is the pulse captured in timings[0]
@@ -656,6 +656,16 @@ public class RCSwitch implements Closeable {
                 }
                 else {
                     // Failed
+                    /*StringBuilder log = new StringBuilder();
+                    log.append("Failed to receive on protocol " + protocolNumber + " in loop ");
+                    log.append("Delay: " + delay + " Tolerance: " + delayTolerance);
+                    log.append(" Zero high diff: " + diff(timings[i], delay * pro.zero.high) + " Zero low diff: " + diff(timings[i + 1], delay * pro.zero.low));
+                    log.append(" One high diff: " + diff(timings[i], delay * pro.one.high) + " One low diff: " + diff(timings[i + 1], delay * pro.one.low));
+                    log.append("\n");
+                    log.append("\n");
+
+                    Log.d(TAG, log.toString());*/
+
                     return false;
                 }
             }
@@ -664,7 +674,21 @@ public class RCSwitch implements Closeable {
                 nReceivedValue = code;
                 nReceivedBitlength = (changeCount - 1) / 2;
                 nReceivedDelay = delay;
-                nReceivedProtocol = p;
+                nReceivedProtocol = protocolNumber;
+
+                StringBuilder builder = new StringBuilder();
+                builder.append("Received ");
+                builder.append(nReceivedValue);
+                builder.append(" / ");
+                builder.append(nReceivedBitlength);
+                builder.append(" bit Protocol: ");
+                builder.append(nReceivedProtocol);
+                builder.append("\n");
+                builder.append("Delay (Pulse Length): ");
+                builder.append(nReceivedDelay);
+
+                Log.d(TAG, builder.toString());
+
                 return true;
             }
 
