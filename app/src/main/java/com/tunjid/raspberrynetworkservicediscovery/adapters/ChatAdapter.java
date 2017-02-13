@@ -5,9 +5,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.helloworld.utils.baseclasses.BaseRecyclerViewAdapter;
-import com.helloworld.utils.baseclasses.BaseViewHolder;
 import com.tunjid.raspberrynetworkservicediscovery.R;
+import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseRecyclerViewAdapter;
+import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseViewHolder;
 
 import java.util.List;
 
@@ -21,7 +21,8 @@ public class ChatAdapter extends BaseRecyclerViewAdapter<ChatAdapter.TextViewHol
 
     private List<String> responses;
 
-    public ChatAdapter(List<String> list) {
+    public ChatAdapter(ChatAdapterListener listener, List<String> list) {
+        super(listener);
         this.responses = list;
     }
 
@@ -33,7 +34,7 @@ public class ChatAdapter extends BaseRecyclerViewAdapter<ChatAdapter.TextViewHol
 
     @Override
     public void onBindViewHolder(TextViewHolder holder, int position) {
-        holder.bind(responses.get(position),  getAdapterListener());
+        holder.bind(responses.get(position), adapterListener);
     }
 
     @Override
@@ -66,7 +67,7 @@ public class ChatAdapter extends BaseRecyclerViewAdapter<ChatAdapter.TextViewHol
 
         @Override
         public void onClick(View v) {
-            adapterListener.onTextClicked(text);
+            if (adapterListener != null) adapterListener.onTextClicked(text);
         }
     }
 }

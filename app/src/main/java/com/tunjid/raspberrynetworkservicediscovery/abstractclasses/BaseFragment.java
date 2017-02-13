@@ -2,9 +2,9 @@ package com.tunjid.raspberrynetworkservicediscovery.abstractclasses;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 
-import com.helloworld.utils.baseclasses.BaseFragment;
-import com.helloworld.utils.widget.FloatingActionButton;
 import com.tunjid.raspberrynetworkservicediscovery.activities.AutoActivity;
 
 /**
@@ -13,7 +13,7 @@ import com.tunjid.raspberrynetworkservicediscovery.activities.AutoActivity;
  * Created by tj.dahunsi on 2/5/17.
  */
 
-public abstract class AutoFragment extends BaseFragment {
+public abstract class BaseFragment extends Fragment {
 
     protected FloatingActionButton floatingActionButton;
 
@@ -28,5 +28,13 @@ public abstract class AutoFragment extends BaseFragment {
     public void onDestroyView() {
         super.onDestroyView();
         floatingActionButton.setOnClickListener(null);
+    }
+
+    public String getStableTag() {
+        return getClass().getSimpleName();
+    }
+
+    public boolean showFragment(BaseFragment fragment) {
+        return ((BaseActivity) getActivity()).showFragment(fragment);
     }
 }

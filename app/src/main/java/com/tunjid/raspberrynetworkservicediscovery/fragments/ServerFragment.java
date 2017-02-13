@@ -9,12 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.tunjid.raspberrynetworkservicediscovery.R;
-import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.AutoFragment;
+import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseFragment;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ServerFragment extends AutoFragment
+public class ServerFragment extends BaseFragment
         implements View.OnClickListener {
 
     public ServerFragment() {
@@ -46,6 +46,7 @@ public class ServerFragment extends AutoFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         floatingActionButton.setOnClickListener(this);
+        floatingActionButton.show();
     }
 
     @Override

@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.design.widget.FloatingActionButton;
 
-import com.helloworld.utils.baseclasses.BaseActivity;
-import com.helloworld.utils.widget.FloatingActionButton;
 import com.tunjid.raspberrynetworkservicediscovery.R;
+import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseActivity;
 import com.tunjid.raspberrynetworkservicediscovery.fragments.ServerFragment;
 import com.tunjid.raspberrynetworkservicediscovery.services.ServerService;
 

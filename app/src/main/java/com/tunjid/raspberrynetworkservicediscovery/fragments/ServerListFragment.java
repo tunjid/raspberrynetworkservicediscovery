@@ -16,7 +16,7 @@ import android.view.ViewGroup;
 
 import com.tunjid.raspberrynetworkservicediscovery.NsdHelper;
 import com.tunjid.raspberrynetworkservicediscovery.R;
-import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.AutoFragment;
+import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseFragment;
 import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.DiscoveryListener;
 import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.ResolveListener;
 import com.tunjid.raspberrynetworkservicediscovery.adapters.NSDAdapter;
@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ServerListFragment extends AutoFragment
+public class ServerListFragment extends BaseFragment
         implements
         NSDAdapter.ServiceClickedListener {
 
@@ -83,7 +83,6 @@ public class ServerListFragment extends AutoFragment
 
         nsdHelper = new NsdHelper(getContext());
         nsdHelper.initializeDiscoveryListener(discoveryListener);
-        //nsdHelper.initializeResolveListener(resolveListener);
 
         nsdHelper.discoverServices();
     }
@@ -91,16 +90,12 @@ public class ServerListFragment extends AutoFragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
 
         View rootView = inflater.inflate(R.layout.fragment_server_list, container, false);
 
         recyclerView = (RecyclerView) rootView.findViewById(R.id.list);
 
-        NSDAdapter adapter = new NSDAdapter(services);
-        adapter.setAdapterListener(this);
-
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(new NSDAdapter(this, services));
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         return rootView;
@@ -110,7 +105,7 @@ public class ServerListFragment extends AutoFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        floatingActionButton.setVisibility(View.GONE);
+        floatingActionButton.hide();
     }
 
     @Override

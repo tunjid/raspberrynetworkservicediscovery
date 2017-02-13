@@ -21,7 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.tunjid.raspberrynetworkservicediscovery.R;
-import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.AutoFragment;
+import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseFragment;
 import com.tunjid.raspberrynetworkservicediscovery.adapters.ChatAdapter;
 import com.tunjid.raspberrynetworkservicediscovery.nsdprotocols.Data;
 import com.tunjid.raspberrynetworkservicediscovery.services.ClientService;
@@ -32,7 +32,7 @@ import java.util.List;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class ClientFragment extends AutoFragment
+public class ClientFragment extends BaseFragment
         implements
         ServiceConnection,
         ChatAdapter.ChatAdapterListener {
@@ -110,13 +110,10 @@ public class ClientFragment extends AutoFragment
         historyView = (RecyclerView) rootView.findViewById(R.id.list);
         commandsView = (RecyclerView) rootView.findViewById(R.id.commands);
 
-        historyView.setAdapter(new ChatAdapter(responses));
+        historyView.setAdapter(new ChatAdapter(null, responses));
         historyView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        ChatAdapter commandsAdapter = new ChatAdapter(commands);
-        commandsAdapter.setAdapterListener(this);
-
-        commandsView.setAdapter(commandsAdapter);
+        commandsView.setAdapter(new ChatAdapter(this, commands));
         commandsView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
         return rootView;
@@ -126,7 +123,7 @@ public class ClientFragment extends AutoFragment
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        floatingActionButton.setVisibility(View.GONE);
+        floatingActionButton.hide();
 
         Intent clientIntent = new Intent(getActivity(), ClientService.class);
         getActivity().bindService(clientIntent, this, Context.BIND_AUTO_CREATE);
