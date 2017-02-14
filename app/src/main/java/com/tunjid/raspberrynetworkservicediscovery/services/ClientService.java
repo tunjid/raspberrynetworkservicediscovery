@@ -101,7 +101,7 @@ public class ClientService extends BaseService {
                 out = createPrintWriter(currentSocket);
                 BufferedReader in = createBufferedReader(currentSocket);
 
-                Log.d(TAG, "Client-side socket initialized.");
+                Log.d(TAG, "Connection-side socket initialized.");
 
                 LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(context);
 
@@ -162,7 +162,7 @@ public class ClientService extends BaseService {
             catch (Exception e) {
                 Log.d(TAG, "Error3", e);
             }
-            Log.d(TAG, "Client sent message: " + message);
+            Log.d(TAG, "Connection sent message: " + message);
         }
     }
 }

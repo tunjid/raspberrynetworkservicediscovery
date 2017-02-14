@@ -1,12 +1,14 @@
 package com.tunjid.raspberrynetworkservicediscovery.services;
 
 import android.content.Intent;
+import android.net.nsd.NsdServiceInfo;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
 
 import com.tunjid.raspberrynetworkservicediscovery.NsdHelper;
 import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseService;
+import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.RegistrationListener;
 import com.tunjid.raspberrynetworkservicediscovery.nsdprotocols.CommsProtocol;
 import com.tunjid.raspberrynetworkservicediscovery.nsdprotocols.ProxyProtocol;
 
@@ -16,20 +18,33 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-
+/**
+ * Service hosting a {@link CommsProtocol} on network service discovery
+ */
 public class ServerService extends BaseService {
 
     private static final String TAG = ServerService.class.getSimpleName();
 
-    private ClientThread clientThread;
-    private final IBinder binder = new NsdServerBinder();
+    private NsdServiceInfo serviceInfo;
+    private ServerThread serverThread;
+
+    private final IBinder binder = new ServerServiceBinder();
+    private final RegistrationListener registrationListener = new RegistrationListener() {
+
+        @Override
+        public void onServiceRegistered(NsdServiceInfo serviceInfo) {
+            super.onServiceRegistered(serviceInfo);
+            ServerService.this.serviceInfo = serviceInfo;
+        }
+    };
 
     @Override
     public void onCreate() {
         super.onCreate();
 
-        clientThread = new ClientThread(nsdHelper);
-        clientThread.start();
+        nsdHelper.initializeRegistrationListener(registrationListener);
+        serverThread = new ServerThread(nsdHelper);
+        serverThread.start();
     }
 
     @Override
@@ -37,24 +52,34 @@ public class ServerService extends BaseService {
         return binder;
     }
 
+    public NsdServiceInfo getServiceInfo() {
+        return serviceInfo;
+    }
+
     protected void tearDown() {
         super.tearDown();
-        clientThread.tearDown();
+        serverThread.tearDown();
     }
 
-    public class NsdServerBinder extends Binder {
-        // Binder impl
+    /**
+     * {@link Binder} for {@link ServerService}
+     */
+    public class ServerServiceBinder extends Binder {
+        public ServerService getServerService() {
+            return ServerService.this;
+        }
     }
 
-    private static class ClientThread extends Thread {
+    /**
+     * Thread for communications between {@link ServerService} and it's clients
+     */
+    private static class ServerThread extends Thread {
 
         volatile boolean isRunning;
 
         private ServerSocket serverSocket;
 
-        ClientThread(NsdHelper helper) {
-
-            helper.initializeRegistrationListener();
+        ServerThread(NsdHelper helper) {
 
             // Since discovery will happen via Nsd, we don't need to care which port is
             // used, just grab an isAvailable one and advertise it via Nsd.
@@ -75,7 +100,7 @@ public class ServerService extends BaseService {
                 try {
                     Log.d(TAG, "ServerSocket Created, awaiting connection.");
                     // Create new clients for every connection received
-                    new Client(serverSocket.accept());
+                    new Connection(serverSocket.accept());
                 }
                 catch (Exception e) {
                     Log.e(TAG, "Error creating ServerSocket: ", e);
@@ -97,9 +122,12 @@ public class ServerService extends BaseService {
         }
     }
 
-    private static class Client {
+    /**
+     * Connection between {@link ServerService} and it's clients
+     */
+    private static class Connection {
 
-        Client(Socket socket) {
+        Connection(Socket socket) {
             Log.d(TAG, "Connected to new client");
 
             if (socket != null && socket.isConnected()) {

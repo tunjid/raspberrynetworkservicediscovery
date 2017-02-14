@@ -1,7 +1,12 @@
 package com.tunjid.raspberrynetworkservicediscovery.fragments;
 
 
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -10,12 +15,17 @@ import android.view.ViewGroup;
 
 import com.tunjid.raspberrynetworkservicediscovery.R;
 import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseFragment;
+import com.tunjid.raspberrynetworkservicediscovery.services.ServerService;
+
+import static android.content.Context.BIND_AUTO_CREATE;
 
 /**
- * A simple {@link Fragment} subclass.
+ * A {@link Fragment} that starts the {@link ServerService}, and is the default state
  */
 public class ServerFragment extends BaseFragment
-        implements View.OnClickListener {
+        implements
+        ServiceConnection,
+        View.OnClickListener {
 
     public ServerFragment() {
         // Required empty public constructor
@@ -47,6 +57,28 @@ public class ServerFragment extends BaseFragment
         super.onActivityCreated(savedInstanceState);
         floatingActionButton.setOnClickListener(this);
         floatingActionButton.show();
+
+        Activity activity = getActivity();
+
+        // Start the server
+        Intent server = new Intent(activity, ServerService.class);
+        activity.bindService(server, this, BIND_AUTO_CREATE);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getActivity().unbindService(this);
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        // Not used.
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        // Not used.
     }
 
     @Override

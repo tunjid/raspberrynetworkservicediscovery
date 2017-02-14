@@ -1,8 +1,13 @@
 package com.tunjid.raspberrynetworkservicediscovery.fragments;
 
 
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.nsd.NsdServiceInfo;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,20 +25,25 @@ import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseFragment;
 import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.DiscoveryListener;
 import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.ResolveListener;
 import com.tunjid.raspberrynetworkservicediscovery.adapters.NSDAdapter;
+import com.tunjid.raspberrynetworkservicediscovery.services.ServerService;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.content.Context.BIND_AUTO_CREATE;
+
 /**
- * A simple {@link Fragment} subclass.
+ * A {@link Fragment} listing supported NSD servers
  */
 public class ServerListFragment extends BaseFragment
         implements
+        ServiceConnection,
         NSDAdapter.ServiceClickedListener {
 
     private RecyclerView recyclerView;
 
     private NsdHelper nsdHelper;
+    private ServerService serverService;
 
     private List<NsdServiceInfo> services = new ArrayList<>();
 
@@ -53,7 +63,7 @@ public class ServerListFragment extends BaseFragment
         @Override
         public void onServiceFound(NsdServiceInfo service) {
             super.onServiceFound(service);
-            nsdHelper.getmNsdManager().resolveService(service, getResolveListener());
+            nsdHelper.getNsdManager().resolveService(service, getResolveListener());
         }
     };
 
@@ -106,6 +116,11 @@ public class ServerListFragment extends BaseFragment
         super.onActivityCreated(savedInstanceState);
 
         floatingActionButton.hide();
+
+        Activity activity = getActivity();
+
+        Intent server = new Intent(activity, ServerService.class);
+        activity.bindService(server, this, BIND_AUTO_CREATE);
     }
 
     @Override
@@ -143,12 +158,24 @@ public class ServerListFragment extends BaseFragment
 
     @Override
     public boolean isSelf(NsdServiceInfo serviceInfo) {
-        return nsdHelper.getServiceName().equals(serviceInfo.getServiceName());
+        return serverService != null && serviceInfo.equals(serverService.getServiceInfo());
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         nsdHelper.tearDown();
+        getActivity().unbindService(this);
+    }
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        serverService = ((ServerService.ServerServiceBinder) service).getServerService();
+        recyclerView.getAdapter().notifyDataSetChanged();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+        serverService = null;
     }
 }
