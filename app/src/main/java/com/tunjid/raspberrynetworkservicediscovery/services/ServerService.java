@@ -25,7 +25,7 @@ public class ServerService extends BaseService {
 
     private static final String TAG = ServerService.class.getSimpleName();
 
-    private NsdServiceInfo serviceInfo;
+    private String serviceName;
     private ServerThread serverThread;
 
     private final IBinder binder = new ServerServiceBinder();
@@ -34,7 +34,7 @@ public class ServerService extends BaseService {
         @Override
         public void onServiceRegistered(NsdServiceInfo serviceInfo) {
             super.onServiceRegistered(serviceInfo);
-            ServerService.this.serviceInfo = serviceInfo;
+            ServerService.this.serviceName = serviceInfo.getServiceName();
         }
     };
 
@@ -52,8 +52,8 @@ public class ServerService extends BaseService {
         return binder;
     }
 
-    public NsdServiceInfo getServiceInfo() {
-        return serviceInfo;
+    public String getServiceName() {
+        return serviceName;
     }
 
     protected void tearDown() {

@@ -19,7 +19,8 @@ import java.util.List;
  * Created by tj.dahunsi on 2/4/17.
  */
 
-public class NSDAdapter extends BaseRecyclerViewAdapter<NSDAdapter.NSDViewHolder, NSDAdapter.ServiceClickedListener> {
+public class NSDAdapter extends BaseRecyclerViewAdapter<NSDAdapter.NSDViewHolder,
+        NSDAdapter.ServiceClickedListener> {
 
     private List<NsdServiceInfo> infoList;
 
@@ -67,7 +68,8 @@ public class NSDAdapter extends BaseRecyclerViewAdapter<NSDAdapter.NSDViewHolder
             adapterListener = listener;
 
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(info.getHost().getHostAddress());
+            stringBuilder.append(info.getServiceName()).append("\n")
+                    .append(info.getHost().getHostAddress());
 
             boolean isSelf = adapterListener.isSelf(info);
 

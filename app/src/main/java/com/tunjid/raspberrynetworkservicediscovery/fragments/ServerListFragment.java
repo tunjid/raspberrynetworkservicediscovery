@@ -158,7 +158,7 @@ public class ServerListFragment extends BaseFragment
 
     @Override
     public boolean isSelf(NsdServiceInfo serviceInfo) {
-        return serverService != null && serviceInfo.equals(serverService.getServiceInfo());
+        return serverService != null && serviceInfo.getServiceName().equals(serverService.getServiceName());
     }
 
     @Override
