@@ -12,7 +12,7 @@ import com.tunjid.raspberrynetworkservicediscovery.abstractclasses.BaseActivity;
 import com.tunjid.raspberrynetworkservicediscovery.fragments.ServerFragment;
 import com.tunjid.raspberrynetworkservicediscovery.services.ServerService;
 
-public class AutoActivity extends BaseActivity
+public class MainActivity extends BaseActivity
         implements ServiceConnection {
 
     private FloatingActionButton floatingActionButton;
@@ -20,7 +20,7 @@ public class AutoActivity extends BaseActivity
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_auto);
+        setContentView(R.layout.activity_main);
 
         floatingActionButton = (FloatingActionButton) findViewById(R.id.fab);
 

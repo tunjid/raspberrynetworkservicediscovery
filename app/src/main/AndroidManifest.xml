@@ -22,8 +22,7 @@
             android:name="com.tunjid.raspberrynetworkservicediscovery.services.ClientService"
             android:enabled="true" />
 
-        <activity android:name="com.tunjid.raspberrynetworkservicediscovery.activities.NsdChatActivity" />
-        <activity android:name="com.tunjid.raspberrynetworkservicediscovery.activities.AutoActivity">
+        <activity android:name="com.tunjid.raspberrynetworkservicediscovery.activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

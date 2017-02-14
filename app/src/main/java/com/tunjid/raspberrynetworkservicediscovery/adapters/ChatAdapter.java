@@ -63,6 +63,8 @@ public class ChatAdapter extends BaseRecyclerViewAdapter<ChatAdapter.TextViewHol
 
             textView.setText(text);
             adapterListener = listener;
+
+            textView.setClickable(adapterListener != null);
         }
 
         @Override

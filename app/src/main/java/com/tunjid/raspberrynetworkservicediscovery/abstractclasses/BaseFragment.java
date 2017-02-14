@@ -5,7 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 
-import com.tunjid.raspberrynetworkservicediscovery.activities.AutoActivity;
+import com.tunjid.raspberrynetworkservicediscovery.activities.MainActivity;
 
 /**
  * Base Fragment class
@@ -21,7 +21,7 @@ public abstract class BaseFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        floatingActionButton = ((AutoActivity) getActivity()).getFloatingActionButton();
+        floatingActionButton = ((MainActivity) getActivity()).getFloatingActionButton();
     }
 
     @Override

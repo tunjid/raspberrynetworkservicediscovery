@@ -58,7 +58,7 @@ public class NSDAdapter extends BaseRecyclerViewAdapter<NSDAdapter.NSDViewHolder
 
         NSDViewHolder(View itemView) {
             super(itemView);
-            textView = (TextView) itemView.findViewById(R.id.text);
+            textView = (TextView) itemView;
             itemView.setOnClickListener(this);
         }
 
@@ -67,7 +67,7 @@ public class NSDAdapter extends BaseRecyclerViewAdapter<NSDAdapter.NSDViewHolder
             adapterListener = listener;
 
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("\n").append(info.getHost().getHostAddress());
+            stringBuilder.append(info.getHost().getHostAddress());
 
             boolean isSelf = adapterListener.isSelf(info);
 
