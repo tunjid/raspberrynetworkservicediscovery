@@ -95,7 +95,7 @@ public class ArduinoSerial implements Closeable {
 
     @Override
     public void close() throws IOException {
-        serial.registerUartDeviceCallback(callback);
+        serial.unregisterUartDeviceCallback(callback);
         serial.close();
         serial = null;
     }
