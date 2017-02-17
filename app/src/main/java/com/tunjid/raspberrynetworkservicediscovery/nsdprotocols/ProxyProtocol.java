@@ -3,7 +3,7 @@ package com.tunjid.raspberrynetworkservicediscovery.nsdprotocols;
 import java.io.IOException;
 
 /**
- * A protocol that proxies requests to aanother {@link CommsProtocol}of a user's choosing
+ * A protocol that proxies requests to another {@link CommsProtocol} of a user's choosing
  * <p>
  * Created by tj.dahunsi on 2/11/17.
  */
@@ -12,6 +12,7 @@ public class ProxyProtocol implements CommsProtocol {
 
     private static final String CHOOSER = "choose";
     private static final String KNOCK_KNOCK = "Knock Knock Jokes";
+    private static final String ARDUINO = "Arduino Remote";
     private static final String RC = "RC Sniffer";
 
     private boolean choosing;
@@ -30,6 +31,7 @@ public class ProxyProtocol implements CommsProtocol {
             choosing = true;
             output.response = "Please choose the server you want, Knock Knock jokes, or an RCSniffer";
             output.commands.add(KNOCK_KNOCK);
+            output.commands.add(ARDUINO);
             output.commands.add(RC);
             return output;
         }
@@ -41,6 +43,9 @@ public class ProxyProtocol implements CommsProtocol {
                     break;
                 case RC:
                     commsProtocol = new RCProtocol();
+                    break;
+                case ARDUINO:
+                    commsProtocol = new ArduinoProtocol();
                     break;
                 default:
                     output.response = "Invalid command. Please choose the server you want, Knock Knock jokes, or an RCSniffer";
